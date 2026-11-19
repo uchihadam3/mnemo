@@ -136,10 +136,17 @@
   };
 
   A.unlock = () => {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { } // iPhone: toca mesmo no modo silencioso
     init();
-    if (ctx && ctx.state === 'suspended') ctx.resume();
+    if (ctx && ctx.state !== 'running') {
+      ctx.resume().catch(() => { });
+      // som vazio dentro do gesto destrava o áudio no iOS
+      try { const b = ctx.createBuffer(1, 1, 22050), src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch (e) { }
+    }
     if (!A.started) { A.started = true; if (mus.want) A.music(mus.want); }
+    else if (mus.cur && mus.cur.el.paused && !document.hidden) mus.cur.el.play().catch(() => { });
   };
+  A.state = () => ({ ctx: ctx && ctx.state, loaded: A.loaded || 0, music: mus.name, playing: !!(mus.cur && !mus.cur.el.paused) });
   A.setVol = (sfx, musV) => {
     A.sfxVol = sfx; A.musVol = musV;
     if (sfxBus) sfxBus.gain.setTargetAtTime(sfx, ctx.currentTime, 0.05);

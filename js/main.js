@@ -1,7 +1,7 @@
 /* MNEMO — inicialização e entrada */
 'use strict';
 (function () {
-  M.VERSION = '1.1.0';
+  M.VERSION = '1.1.1';
   const $ = M.$;
 
   M.applySettings = () => {
@@ -36,9 +36,9 @@
     M.ui.show('menu');
 
     // primeiro gesto libera o áudio
+    // o navegador só libera som num gesto completo (toque solto, clique ou tecla)
     const unlock = () => { M.audio.unlock(); M.applySettings(); };
-    addEventListener('pointerdown', unlock, { once: false, passive: true });
-    addEventListener('keydown', unlock, { once: true });
+    ['pointerup', 'touchend', 'click', 'keydown'].forEach(ev => addEventListener(ev, unlock, { passive: true, capture: true }));
 
     // cliques globais (delegação)
     document.addEventListener('click', (e) => {
