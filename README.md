@@ -3,6 +3,8 @@
 **MNEMO** é um roguelike de construção de baralho em cima do bom e velho **jogo da memória**.
 Vire cartas, forme pares, encadeie **combos**, monte builds absurdas com **Relíquias** e derrote os **Chefes** dos 8 Círculos da Memória.
 
+### ▶️ [Jogar agora no navegador](https://uchihadam3.github.io/mnemo/) · [⬇️ Baixar instaladores](https://github.com/uchihadam3/mnemo/releases/latest)
+
 > Feito em HTML/CSS/JS puro — roda no navegador, instala como app (PWA) e tem instalador para Windows, Linux e macOS.
 
 ---
@@ -15,7 +17,7 @@ Vire cartas, forme pares, encadeie **combos**, monte builds absurdas com **Relí
 | **Windows portátil** | `MNEMO-x.y.z-portatil.exe` — roda sem instalar. |
 | **Linux** | `.AppImage` (dê permissão de execução) ou `.deb`. |
 | **macOS** | `.dmg` (pode ser preciso liberar em *Ajustes › Privacidade e Segurança*). |
-| **Navegador** | Abra o site do GitHub Pages do repositório. No Chrome/Edge aparece o botão **Instalar** no menu do jogo. |
+| **Navegador** | Abra https://uchihadam3.github.io/mnemo/. No Chrome/Edge aparece o botão **Instalar** no menu do jogo. |
 | **Local** | Basta abrir `index.html` — ou `npm install && npm start` para o app de desktop. |
 
 O progresso é **salvo automaticamente** a cada jogada. Feche quando quiser e use **Continuar jornada**.
