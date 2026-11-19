@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MNEMO — Audição de músicas e sons</title>
+<meta name="theme-color" content="#140a2e">
+<style>
+@font-face { font-family: 'Lilita'; src: url(../fonts/lilita.woff2) format('woff2'); }
+@font-face { font-family: 'Nunito'; src: url(../fonts/nunito.woff2) format('woff2'); font-weight: 200 1000; }
+:root { --bg: #0d0824; --panel: #1a1238; --panel2: #120c2a; --ink: #f4f0ff; --muted: #a79fd0; --line: rgba(255,255,255,.1);
+  --menu: #8e4dff; --jogo: #24b46a; --chefe: #f2464f; --loja: #ffc93c; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: radial-gradient(ellipse at 50% 0%, #2d1866, var(--bg) 60%) fixed; color: var(--ink); font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; padding: 16px 16px 150px; max-width: 760px; margin: 0 auto; }
+h1 { font-family: 'Lilita', sans-serif; font-weight: 400; font-size: 34px; text-align: center; margin: 6px 0 4px; }
+h2 { font-family: 'Lilita', sans-serif; font-weight: 400; font-size: 24px; margin: 26px 0 6px; }
+.lead { text-align: center; color: #ddd6ff; line-height: 1.45; font-size: 15px; }
+.how { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-top: 14px; font-size: 14px; line-height: 1.5; color: #e6e0ff; }
+.how b { color: #fff; }
+.roles-legend { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.tag { font-size: 12px; padding: 2px 9px; border-radius: 20px; color: #fff; }
+.t-menu { background: var(--menu); } .t-jogo { background: var(--jogo); } .t-chefe { background: var(--chefe); } .t-loja { background: var(--loja); color: #3a2400; }
+.track { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 10px; margin-top: 8px; transition: border-color .2s; }
+.track.playing { border-color: #5ef0ff; box-shadow: 0 0 18px rgba(94,240,255,.25); }
+.play { width: 52px; height: 52px; border-radius: 50%; background: #2f7cf6; color: #fff; font-size: 22px; border: 0; box-shadow: 0 4px 0 #17459c; cursor: pointer; }
+.track.playing .play { background: #ff7a1a; box-shadow: 0 4px 0 #a84300; }
+.tname { font-family: 'Lilita', sans-serif; font-weight: 400; font-size: 18px; line-height: 1.1; }
+.tname small { font-family: 'Nunito'; font-size: 12px; color: var(--muted); font-weight: 700; }
+.bar { height: 5px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.bar i { display: block; height: 100%; width: 0; background: #5ef0ff; }
+.pick { display: flex; gap: 5px; flex-wrap: wrap; }
+.pick button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 20px; border: 2px solid var(--line); background: var(--panel2); color: var(--muted); cursor: pointer; }
+.pick button.on { color: #fff; border-color: transparent; }
+.pick button.on[data-r=menu] { background: var(--menu); } .pick button.on[data-r=jogo] { background: var(--jogo); } .pick button.on[data-r=chefe] { background: var(--chefe); } .pick button.on[data-r=loja] { background: var(--loja); color: #3a2400; }
+.pick button.on[data-r=nao] { background: #444; }
+.ev { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 10px 12px; margin-top: 8px; }
+.ev-t { font-family: 'Lilita', sans-serif; font-weight: 400; font-size: 18px; }
+.ev-d { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt { width: 56px; height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel2); color: #fff; font-family: 'Lilita', sans-serif; font-size: 22px; cursor: pointer; position: relative; }
+.opt.on { background: #24b46a; border-color: #8ff0b9; box-shadow: 0 0 14px rgba(36,180,106,.6); }
+.opt.on::after { content: '✓'; position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #24b46a; font-size: 13px; display: grid; place-items: center; }
+.opt.flash { transform: scale(.92); }
+.dock { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(13,8,36,.96); border-top: 2px solid var(--line); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); backdrop-filter: blur(8px); }
+.dock-in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+#code { flex: 1; font-size: 12px; color: #ddd6ff; line-height: 1.35; max-height: 52px; overflow: auto; word-break: break-word; }
+.copy { font-family: 'Lilita', sans-serif; font-size: 18px; padding: 12px 16px; border-radius: 14px; border: 0; background: #ff7a1a; color: #fff; box-shadow: 0 4px 0 #a84300; cursor: pointer; white-space: nowrap; }
+.credits { margin-top: 26px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>🎧 Audição do MNEMO</h1>
+<p class="lead">Escolha a trilha e os sons do jogo. Toque para ouvir e marque o que você gostou.</p>
+<div class="how">
+  <b>Músicas:</b> ouça cada trecho (~45s) e marque o papel dela no jogo:
+  <div class="roles-legend"><span class="tag t-menu">Menu</span><span class="tag t-jogo">Jogo</span><span class="tag t-chefe">Chefe</span><span class="tag t-loja">Loja</span></div>
+  Pode marcar <b>várias para "Jogo"</b> (elas se revezam). Se não gostar, marque <b>✕</b>.<br>
+  <b>Efeitos:</b> para cada momento, toque nas letras para ouvir. A última que você tocar fica escolhida ✓.<br>
+  No fim, toque em <b>Copiar escolhas</b> e cole aqui no chat.
+</div>
+
+<h2>🎵 Músicas</h2>
+<div id="tracks"></div>
+
+<h2>🔊 Efeitos sonoros</h2>
+<div id="sfx"></div>
+
+<div class="credits">Músicas de Kevin MacLeod (incompetech.com, CC BY 4.0) e de artistas do OpenGameArt.org (CC0 / CC-BY). Efeitos de Kenney.nl, Juhani Junkala e Cockatrice (CC0).</div>
+
+<div class="dock"><div class="dock-in"><div id="code">Nada escolhido ainda.</div><button class="copy" id="copy">Copiar escolhas</button></div></div>
+
+<script>
+const TRACKS = [
+  ['k_hypnothis', 'Hypnothis', 'Kevin MacLeod'], ['o_hypnoticchill', 'Hypnotic Chill', 'cynicmusic'], ['k_ethervox', 'Ether Vox', 'Kevin MacLeod'],
+  ['o_trippy', 'Look Trippy', 'Pro Sensory'], ['o_nightdrive', 'Chillwave Nightdrive', 'Bogart VGM'], ['k_deephaze', 'Deep Haze', 'Kevin MacLeod'],
+  ['o_acid', 'Dirty Acid', 'Bogart VGM'], ['o_tiki', 'Enchanted Tiki 86', 'cynicmusic'], ['k_bitshift', 'Bit Shift', 'Kevin MacLeod'],
+  ['o_electro', 'Electro (Synthwave)', 'Pro Sensory'], ['o_clouds', 'Digital Clouds', 'Eric Matyas'], ['k_arcadia', 'Arcadia', 'Kevin MacLeod'],
+  ['o_lofi', 'Chill Lofi (loop)', 'qubodup'], ['k_spacial', 'Spacial Harvest', 'Kevin MacLeod'], ['o_dayside', 'Dayside', 'Yubatake'],
+  ['k_voltaic', 'Voltaic', 'Kevin MacLeod'], ['o_fmfun', 'FM Fun', 'sla97'], ['k_neon', 'Neon Laser Horizon', 'Kevin MacLeod'],
+  ['o_alien', 'Alien Vistas', 'Eric Matyas'], ['k_lemonade', 'Digital Lemonade', 'Kevin MacLeod'], ['o_blueberries', 'Blueberries', 'Viktor Kraus'],
+  ['o_mars', 'Happy Trip to Mars', 'Pro Sensory'],
+];
+const EVENTS = [
+  ['virar', 'Virar carta', 'Toca toda vez que você vira uma carta', 'ABCDE'],
+  ['par', 'Acertar o par', 'O som de vitória pequena a cada par (sobe de tom com o combo)', 'ABCDE'],
+  ['erro', 'Errar', 'Quando as duas cartas não combinam', 'ABCDE'],
+  ['ficha', 'Contar pontos', 'Toca rápido várias vezes enquanto os pontos sobem', 'ABCDE'],
+  ['mult', 'Multiplicador', 'Quando uma relíquia multiplica seus pontos', 'ABCDE'],
+  ['dinheiro', 'Ganhar dinheiro', 'Moedas entrando', 'ABCD'],
+  ['vitoria', 'Vencer o salão', 'Vinheta de vitória', 'ABCDEF'],
+  ['derrota', 'Perder a jornada', 'Vinheta de derrota', 'ABCD'],
+  ['clique', 'Botões', 'Clique nos botões e menus', 'ABCD'],
+];
+const ROLES = [['menu', 'Menu'], ['jogo', 'Jogo'], ['chefe', 'Chefe'], ['loja', 'Loja'], ['nao', '✕']];
+let st = { t: {}, s: {} };
+try { st = JSON.parse(localStorage.getItem('mnemo-audicao')) || st; } catch (e) { }
+const save = () => { try { localStorage.setItem('mnemo-audicao', JSON.stringify(st)); } catch (e) { } render(); };
+
+let cur = null, curEl = null;
+const audio = new Audio();
+audio.addEventListener('timeupdate', () => { if (curEl) curEl.querySelector('.bar i').style.width = (audio.currentTime / (audio.duration || 45) * 100) + '%'; });
+audio.addEventListener('ended', stop);
+function stop() { audio.pause(); if (curEl) { curEl.classList.remove('playing'); curEl.querySelector('.play').textContent = '▶'; } cur = null; curEl = null; }
+function playTrack(id, el) {
+  if (cur === id) { stop(); return; }
+  stop(); sfx.pause();
+  audio.src = 'm/' + id + '.mp3'; audio.play();
+  cur = id; curEl = el; el.classList.add('playing'); el.querySelector('.play').textContent = '❚❚';
+}
+const sfx = new Audio();
+function playSfx(ev, L, btn) {
+  stop(); sfx.pause(); sfx.src = 's/' + ev + '_' + L + '.mp3'; sfx.currentTime = 0; sfx.play();
+  st.s[ev] = L; save();
+  btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 120);
+}
+
+document.getElementById('tracks').innerHTML = TRACKS.map(([id, n, a], i) => `
+  <div class="track" data-id="${id}">
+    <button class="play" aria-label="Tocar">▶</button>
+    <div><div class="tname">${String(i + 1).padStart(2, '0')} · ${n} <small>— ${a}</small></div><div class="bar"><i></i></div>
+    <div class="pick">${ROLES.map(([r, rn]) => `<button data-r="${r}">${rn}</button>`).join('')}</div></div>
+  </div>`).join('');
+document.getElementById('sfx').innerHTML = EVENTS.map(([ev, n, d, opts]) => `
+  <div class="ev" data-ev="${ev}"><div class="ev-t">${n}</div><div class="ev-d">${d}</div>
+  <div class="opts">${opts.split('').map(L => `<button class="opt" data-l="${L}">${L}</button>`).join('')}</div></div>`).join('');
+
+document.querySelectorAll('.track').forEach(el => {
+  const id = el.dataset.id;
+  el.querySelector('.play').onclick = () => playTrack(id, el);
+  el.querySelectorAll('.pick button').forEach(b => b.onclick = () => {
+    const r = b.dataset.r; const set = new Set(st.t[id] || []);
+    if (r === 'nao') { st.t[id] = set.has('nao') ? [] : ['nao']; }
+    else {
+      set.delete('nao');
+      if (set.has(r)) set.delete(r); else {
+        if (r !== 'jogo') Object.keys(st.t).forEach(k => { if (k !== id) st.t[k] = (st.t[k] || []).filter(x => x !== r); }); // menu/chefe/loja: só uma música
+        set.add(r);
+      }
+      st.t[id] = [...set];
+    }
+    save();
+  });
+});
+document.querySelectorAll('.ev').forEach(el => el.querySelectorAll('.opt').forEach(b => b.onclick = () => playSfx(el.dataset.ev, b.dataset.l, b)));
+
+function code() {
+  const num = (id) => String(TRACKS.findIndex(t => t[0] === id) + 1);
+  const by = (r) => Object.keys(st.t).filter(k => (st.t[k] || []).includes(r)).map(num).join(',') || '-';
+  const m = `MENU:${by('menu')} JOGO:${by('jogo')} CHEFE:${by('chefe')} LOJA:${by('loja')} NAO:${by('nao')}`;
+  const s = EVENTS.map(([ev]) => `${ev}:${st.s[ev] || '-'}`).join(' ');
+  return `MNEMO-AUDIO ${m} | ${s}`;
+}
+function render() {
+  document.querySelectorAll('.track').forEach(el => { const r = st.t[el.dataset.id] || []; el.querySelectorAll('.pick button').forEach(b => b.classList.toggle('on', r.includes(b.dataset.r))); });
+  document.querySelectorAll('.ev').forEach(el => el.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', st.s[el.dataset.ev] === b.dataset.l)));
+  document.getElementById('code').textContent = code();
+}
+document.getElementById('copy').onclick = async () => {
+  const c = code();
+  try { await navigator.clipboard.writeText(c); document.getElementById('copy').textContent = 'Copiado! ✓'; }
+  catch (e) { prompt('Copie o texto abaixo e cole no chat:', c); }
+  setTimeout(() => document.getElementById('copy').textContent = 'Copiar escolhas', 2000);
+};
+render();
+</script>
+</body>
+</html>
