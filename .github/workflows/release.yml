@@ -2,7 +2,7 @@ name: Gerar instaladores
 on:
   push:
     branches: [main]
-    paths: ['package.json', '.github/workflows/release.yml']
+    paths: ['package.json', 'build/**', '.github/workflows/release.yml']
     tags: ['v*']
   workflow_dispatch:
 permissions:
