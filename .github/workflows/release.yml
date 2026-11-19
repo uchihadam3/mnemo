@@ -1,6 +1,8 @@
 name: Gerar instaladores
 on:
   push:
+    branches: [main]
+    paths: ['package.json', '.github/workflows/release.yml']
     tags: ['v*']
   workflow_dispatch:
 permissions:
@@ -31,10 +33,23 @@ jobs:
             dist/*.deb
             dist/*.dmg
           if-no-files-found: ignore
+      - name: Ler versão
+        id: ver
+        shell: bash
+        run: echo "v=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
       - name: Anexar ao release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.ver.outputs.v }}
+          name: MNEMO ${{ steps.ver.outputs.v }}
+          target_commitish: ${{ github.sha }}
+          body: |
+            🃏 **MNEMO — o roguelike da memória**
+
+            - **Windows:** baixe `MNEMO-*-Instalador.exe` (ou a versão portátil `*-portatil.exe`).
+              Se o Windows avisar sobre app não reconhecido: *Mais informações → Executar assim mesmo*.
+            - **Linux:** `.AppImage` ou `.deb`
+            - **macOS:** `.dmg`
           files: |
             dist/*.exe
             dist/*.AppImage
