@@ -57,3 +57,5 @@ M.todayKey = () => {
 };
 M.roman = (n) => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n] || String(n);
 M.uid = (() => { let i = 0; return () => (Date.now().toString(36) + (i++).toString(36) + Math.random().toString(36).slice(2, 6)); })();
+
+M.vibrate = (ms) => { try { if (M.profile && M.profile.settings.shake && navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };

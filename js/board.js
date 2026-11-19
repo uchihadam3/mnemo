@@ -48,8 +48,28 @@
     M.ui.show('round');
     const ctx = G.ctxBasic();
     for (const r of run.relics) { const d = M.RELIC[r.id]; if (d.roundStart) { d.roundStart(ctx, r); M.ui.bumpRelic(run.relics.indexOf(r)); } }
-    if (boss) { M.audio.play('boss'); M.fx.announce(`${boss.i} ${boss.n}`, 'boss', 1400); await M.sleep(900); }
+    if (boss) { M.audio.play('boss'); M.fx.announce(`${boss.i} ${boss.n}`, 'boss', 1400); await M.sleep(1100); M.ui.coach('boss', '<b>Chefe!</b> Ele muda as regras deste salão. Leia o aviso acima do tabuleiro.'); }
+    M.fx.announce(`🎯 META: ${M.fmt(rs.target)}`, 'gold', 1000);
+    M.ui.coach('goal', `Objetivo: fazer <b>${M.fmt(rs.target)} pontos</b> formando pares, antes de perder todos os <b class="tent">❤</b>.`, 5000);
+    if (run.ante === 1 && run.round === 1) M.ui.coach('peek', 'Dica: <b>👁 Espiar</b> mostra uma carta de graça. Toque no 👁 e depois na carta (ou botão direito).', 5500);
+    await M.sleep(700);
     await B.deal();
+  };
+
+  /* ---------------- FEBRE: combo alto dobra os pontos ---------------- */
+  B.FEVER_AT = 4;
+  B.setFever = (on, quiet) => {
+    const rs = M.run && M.run.rs;
+    if (!rs || !!rs.fever === on) { if (!on) document.body.classList.remove('fever'); return; }
+    rs.fever = on;
+    document.body.classList.toggle('fever', on);
+    if (quiet) return;
+    if (on) {
+      M.audio.play('fever'); M.audio.mood('fever');
+      M.fx.announce('🔥 FEBRE! PONTOS x2 🔥', 'fire', 1200);
+      M.fx.burst(innerWidth / 2, innerHeight / 2, { n: 120, colors: ['#ff9f1c', '#ffd166', '#ff4d5e', '#fff'], speed: 1000, size: 5 });
+      M.ui.coach('fever', '<b>FEBRE!</b> Enquanto o combo estiver em 4 ou mais, <b>todos os pontos valem o dobro</b>. Não erre!');
+    } else { M.audio.play('feverEnd'); M.audio.mood('round'); M.fx.announce('a febre passou...', 'blue', 700); }
   };
 
   B.resume = async () => {
@@ -110,6 +130,7 @@
     for (const r of run.relics) { const d = M.RELIC[r.id]; if (d.boardStart) { d.boardStart(ctx, r); M.ui.bumpRelic(run.relics.indexOf(r)); } }
     await B.preview();
     B.lock = Math.max(0, B.lock - 1);
+    M.ui.coach('flip', 'Toque numa carta para virar. Depois ache a <b>igual</b>: mesmo símbolo <b>e</b> mesma cor.', 6000);
     G.save();
     B.startTimer();
   };
@@ -133,6 +154,7 @@
     order.forEach((c, i) => setTimeout(() => { B.setUp(c, true); }, i * 18));
     M.audio.play('peek');
     const bar = M.ui.previewBar(t);
+    M.ui.coach('preview', '<b>Memorize!</b> As cartas vão virar em instantes. Guarde onde estão os pares.', Math.max(2500, t * 1000 + 600));
     B.previewSkip = false;
     const start = performance.now();
     while ((performance.now() - start) < t * 1000 + order.length * 18 && !B.previewSkip) await M.sleepRaw(30);
@@ -272,9 +294,9 @@
     const s = B.slotEl(c);
     s.classList.add('wrong');
     M.audio.play('mismatch'); M.fx.shake(10, 350);
-    M.fx.floatEl(s, 'NHAC! -1 Tentativa', 'bad');
+    M.fx.floatEl(s, 'NHAC! -1 ❤', 'bad');
     rs.tent--; rs.lost++; rs.combo = 0; rs.mismatches++; M.run.stats.mismatches++;
-    M.audio.intensity = 0; M.bg.tInt = 0;
+    M.bg.tInt = 0; B.setFever(false);
     M.ui.updateHUD();
     await M.sleep(700);
     c.st = 'm'; s.classList.add('gone');
@@ -296,6 +318,8 @@
     if (rs.combo >= 8) M.save.achieve('combo8');
     if (rs.combo >= 12) M.save.achieve('combo12');
     M.save.achieve('par1');
+    if (rs.combo >= B.FEVER_AT) B.setFever(true);
+    M.ui.coach('match', '<b>Par!</b> 🎉 Pares seguidos sobem o <b>🔥 Combo</b>, que multiplica seus pontos.');
 
     // efeitos "próximo par" que transformam a carta antes de pontuar
     const transform = { midas: ['enh', 'gold'], vidro: ['enh', 'glass'], fichas: ['enh', 'bonus'], furia: ['enh', 'mult'], amuleto: ['enh', 'lucky'], aco: ['enh', 'steel'], pedra: ['enh', 'stone'] };
@@ -316,7 +340,7 @@
     const col = a.enh === 'stone' ? '#bbb' : S.c;
     for (const s of [sa, sb]) { const [x, y] = M.fx.at(s); M.fx.burst(x, y, { n: 18 + rs.combo * 4, colors: [col, S.c2, '#fff'], speed: 300 + rs.combo * 40, size: 3.5 }); M.fx.ring(x, y, col, 90 + rs.combo * 8); }
     M.audio.play('match', rs.combo);
-    M.audio.intensity = Math.min(1, rs.combo / 8); M.bg.tInt = Math.min(1, rs.combo / 7);
+    M.bg.tInt = Math.min(1, rs.combo / 7);
 
     const kindTxt = { memory: 'Lembrança', luck: 'Sorte', blind: 'Sorte Cega!' }[kind];
     M.ui.showPairInfo(a, kindTxt, rs.combo);
@@ -348,7 +372,13 @@
     }
     if (run.cards.length === 0) run.cards.push({ uid: M.uid(), suit: 'chama', rank: 1, enh: null, ed: null });
 
-    sa.classList.add('gone'); sb.classList.add('gone');
+    const tgt = M.ui.hAnchor('score');
+    if (tgt) for (const sl of [sa, sb]) {
+      const r1 = sl.getBoundingClientRect(), r2 = tgt.getBoundingClientRect();
+      sl.style.setProperty('--fx', (r2.left + r2.width / 2 - (r1.left + r1.width / 2)) + 'px');
+      sl.style.setProperty('--fy', (r2.top + r2.height / 2 - (r1.top + r1.height / 2)) + 'px');
+    }
+    sa.classList.add('gone', 'fly'); sb.classList.add('gone', 'fly');
     M.ui.updateHUD();
 
     if (G.flag('ima')) { const nb = [...new Set([...B.neighbors(a), ...B.neighbors(b)])]; if (nb.length) { B.reveal(nb, 800); M.ui.bumpRelicId('ima'); } }
@@ -381,6 +411,7 @@
     const step = G.flag('combo2') ? 2 : 1;
     if (rs.combo > 1 && rs.boss !== 'vazio') { mult += (rs.combo - 1) * step; push('combo', 'mult', (rs.combo - 1) * step); }
     if (kind === 'blind') { const x = G.flag('venda') ? 4 : 2; mult *= x; push('blind', 'xmult', x, { text: 'Sorte Cega' }); if (G.flag('venda')) M.ui.bumpRelicId('venda'); }
+    if (rs.fever) { mult *= 2; push('fever', 'xmult', 2, { text: 'Febre' }); }
     // encantamentos
     const e = pair.enh;
     if (e === 'bonus') { chips += 30; push('card', 'chips', 30); }
@@ -442,16 +473,18 @@
     }
     if (!protect && !save) {
       rs.tent--; rs.lost++;
-      M.fx.shake(7, 280);
-      M.fx.floatEl(sb, '-1 Tentativa', 'bad');
+      M.fx.shake(7, 280); M.vibrate(60);
+      M.fx.floatEl(sb, '-1 ❤', 'bad');
       if (rs.boss === 'ladrao' && run.money > 0) { G.addMoney(-1); M.fx.floatEl(sa, '-$1', 'bad'); }
     }
     if (!protect) {
       if (G.flag('ouroboros')) rs.combo = Math.floor(rs.combo / 2);
       else rs.combo = 0;
     }
-    M.audio.intensity = Math.min(1, rs.combo / 8); M.bg.tInt = Math.min(1, rs.combo / 7);
+    M.bg.tInt = Math.min(1, rs.combo / 7);
+    if (rs.combo < B.FEVER_AT) B.setFever(false);
     M.ui.updateHUD();
+    M.ui.coach('miss', 'Errou: <b class="tent">-1 ❤</b>. Lembre onde essas cartas estão para formar os pares depois!');
     B.upPair = [a, b];
     const delay = rs.boss === 'fantasma' ? 280 : (M.profile.settings.fastHide ? 520 : 950);
     B.hideTimer = setTimeout(() => B.hideUpPair(), delay / (M.speed || 1));
@@ -507,7 +540,7 @@
     M.fx.announce('TABULEIRO LIMPO!', 'gold', 1000);
     M.fx.confetti(60);
     rs.tent += 2;
-    M.fx.float(innerWidth / 2, innerHeight / 2 + 60, '+2 Tentativas', 'tent big');
+    M.fx.float(innerWidth / 2, innerHeight / 2 + 60, '+2 ❤', 'tent big');
     if (rs.boardMiss === 0) M.save.achieve('perfeito');
     const ctx = B.ctxRound();
     for (const r of run.relics) { const d = M.RELIC[r.id]; if (d.boardClear) { d.boardClear(ctx, r); M.ui.bumpRelic(run.relics.indexOf(r)); } }
@@ -543,7 +576,7 @@
     M.audio.play('win');
     M.fx.announce('SALÃO VENCIDO!', 'win', 1300);
     M.fx.confetti(120);
-    M.audio.intensity = 0; M.bg.tInt = 0;
+    M.bg.tInt = 0; B.setFever(false, true); M.audio.mood('normal');
     // revela o resto do tabuleiro
     rs.cards.filter(c => c.st === 'h').forEach((c, i) => setTimeout(() => B.setUp(c, true), i * 30));
     await M.sleep(1600);
@@ -568,6 +601,7 @@
     }
     B.stopTimer();
     B.lock++;
+    B.setFever(false, true); M.audio.music(null);
     M.audio.play('lose');
     M.bg.set('lose');
     M.fx.announce('SEM TENTATIVAS...', 'bad', 1500);
@@ -593,7 +627,7 @@
       if (left <= 0) {
         B.lock++;
         if (B.first) { const f = B.first; B.first = null; f.st = 'h'; B.setUp(f, false); }
-        rs.tent--; rs.lost++; rs.combo = 0;
+        rs.tent--; rs.lost++; rs.combo = 0; B.setFever(false);
         M.audio.play('mismatch'); M.fx.shake(8, 300);
         M.fx.announce('⏰ Tempo esgotado!', 'bad', 700);
         M.ui.updateHUD();

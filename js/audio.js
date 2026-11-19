@@ -1,165 +1,155 @@
-/* MNEMO — áudio 100% sintetizado (efeitos + música generativa reativa ao combo) */
+/* MNEMO — áudio: músicas reais (Kevin MacLeod, CC BY 4.0) e efeitos gravados (Kenney, CC0) */
 'use strict';
 (function () {
-  let ctx = null, master, sfxBus, musBus, comp, noiseBuf;
-  const A = M.audio = { sfxVol: 0.7, musVol: 0.45, intensity: 0, started: false };
+  const A = M.audio = { sfxVol: 0.7, musVol: 0.45, started: false, fever: false };
+  let ctx = null, master, sfxBus, musBus, musFilter;
+  const buf = {};
+  const SFX = ['flip1', 'flip2', 'flip3', 'place1', 'place2', 'place3', 'shove', 'shuffle', 'fan', 'packopen', 'takeout',
+    'chip1', 'chip2', 'chip3', 'stack1', 'stack2', 'collide', 'handle', 'dice', 'click', 'select', 'error', 'glass', 'confirm',
+    'open', 'close', 'tick', 'pluck', 'bong', 'hover', 'shatter', 'bell', 'punch', 'metal', 'thud', 'powerup', 'phaserup',
+    'threetone', 'zapup', 'lowdown', 'j_SAX04', 'j_SAX10', 'j_SAX07', 'j_PIZZI02', 'j_PIZZI05', 'j_NES03', 'j_HIT09', 'j_STEEL04'];
+  const TRACKS = { menu: 'menu', round1: 'round1', round2: 'round2', boss: 'boss', shop: 'shop' };
 
   function init() {
     if (ctx) return;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     ctx = new AC();
-    comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -14; comp.ratio.value = 4;
-    master = ctx.createGain(); master.gain.value = 0.9;
-    sfxBus = ctx.createGain(); musBus = ctx.createGain();
-    sfxBus.gain.value = A.sfxVol; musBus.gain.value = A.musVol;
-    sfxBus.connect(comp); musBus.connect(comp); comp.connect(master); master.connect(ctx.destination);
-    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 1, ctx.sampleRate);
-    const d = noiseBuf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    // reverb simples
-    A.rev = makeReverb();
-    A.rev.connect(comp);
+    master = ctx.createDynamicsCompressor();
+    master.threshold.value = -10; master.ratio.value = 3;
+    master.connect(ctx.destination);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = A.sfxVol; sfxBus.connect(master);
+    musFilter = ctx.createBiquadFilter(); musFilter.type = 'lowpass'; musFilter.frequency.value = 20000; musFilter.Q.value = 0.7;
+    musBus = ctx.createGain(); musBus.gain.value = A.musVol;
+    musFilter.connect(musBus); musBus.connect(master);
+    SFX.forEach(load);
   }
-  function makeReverb() {
-    const conv = ctx.createConvolver();
-    const len = ctx.sampleRate * 2.2;
-    const b = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (let c = 0; c < 2; c++) {
-      const ch = b.getChannelData(c);
-      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
+  async function load(name) {
+    try {
+      const r = await fetch(`audio/sfx/${name}.mp3`);
+      const ab = await r.arrayBuffer();
+      buf[name] = await ctx.decodeAudioData(ab);
+      A.loaded = (A.loaded || 0) + 1;
+    } catch (e) { buf[name] = 'el'; }
+  }
+
+  // toca um sample; rate muda o tom
+  function s(name, { vol = 1, rate = 1, t = 0, jitter = 0.04 } = {}) {
+    if (!ctx || A.sfxVol <= 0) return;
+    const b = buf[name];
+    if (b === 'el' || !b) { // sem Web Audio decodificado (ex.: arquivo local): usa <audio>
+      if (b !== 'el') return;
+      const el = new Audio(`audio/sfx/${name}.mp3`); el.volume = Math.min(1, vol * A.sfxVol); el.playbackRate = rate;
+      setTimeout(() => el.play().catch(() => { }), t * 1000); return;
     }
-    conv.buffer = b;
-    const g = ctx.createGain(); g.gain.value = 0.28;
-    conv.connect(g);
-    g.connect = g.connect.bind(g);
-    conv._out = g;
-    return { input: conv, connect: (n) => g.connect(n) };
+    const src = ctx.createBufferSource(); src.buffer = b;
+    src.playbackRate.value = rate * (1 + (Math.random() * 2 - 1) * jitter);
+    const g = ctx.createGain(); g.gain.value = vol;
+    src.connect(g); g.connect(sfxBus);
+    src.start(ctx.currentTime + t);
   }
+  const pick = (...a) => a[Math.floor(Math.random() * a.length)];
+  const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
+  const semi = (n) => Math.pow(2, n / 12);
+
+  A.sfx = {
+    hover() { s('hover', { vol: 0.18, rate: 1.2 }); },
+    click() { s('click', { vol: 0.5 }); },
+    flip() { s(pick('flip1', 'flip2', 'flip3'), { vol: 0.9, rate: 1.05, jitter: 0.08 }); },
+    flipDown() { s(pick('place1', 'place2', 'place3'), { vol: 0.35, rate: 1.2 }); },
+    deal(i = 0) { if (i % 2 === 0) s(pick('place1', 'place2', 'place3'), { vol: 0.4, rate: 1 + (i % 12) * 0.02 }); },
+    match(combo = 1) {
+      const n = PENTA[Math.min(combo - 1, PENTA.length - 1)];
+      s('bell', { vol: 0.55, rate: 0.9 * semi(n), jitter: 0 });
+      s('chip' + (1 + (combo % 3)), { vol: 0.8, t: 0.02 });
+      if (combo >= 3) s('pluck', { vol: 0.5, rate: semi(n + 12) * 0.5, t: 0.08, jitter: 0 });
+    },
+    mismatch() { s('error', { vol: 0.55, rate: 0.9 }); s('thud', { vol: 0.7, rate: 0.8 }); },
+    chips(i = 0) { s(pick('chip1', 'chip2', 'chip3'), { vol: 0.75, rate: 1 + Math.min(i, 14) * 0.045 }); },
+    mult(i = 0) { s('tick', { vol: 0.8, rate: 0.8 + Math.min(i, 14) * 0.06, jitter: 0 }); s('chip2', { vol: 0.4, rate: 0.8 }); },
+    xmult() { s('metal', { vol: 0.55, rate: 1.1 }); s('zapup', { vol: 0.3, rate: 1.2 }); },
+    coin() { s('handle', { vol: 0.8, rate: 1.15 }); },
+    score(big = false) { s(big ? 'stack2' : 'stack1', { vol: 1 }); if (big) { s('punch', { vol: 0.8, rate: 0.8 }); s('bong', { vol: 0.45, rate: 0.8 }); } },
+    buy() { s('confirm', { vol: 0.5 }); s('collide', { vol: 0.8 }); },
+    sell() { s('handle', { vol: 0.9 }); s('chip1', { vol: 0.6, t: 0.06 }); },
+    reroll() { s('shuffle', { vol: 0.8, rate: 1.25 }); },
+    pack() { s('packopen', { vol: 1 }); s('j_NES03', { vol: 0.45, t: 0.18 }); },
+    take() { s('takeout', { vol: 0.9 }); },
+    use() { s('phaserup', { vol: 0.35 }); s('glass', { vol: 0.5, t: 0.05 }); },
+    peek() { s('glass', { vol: 0.6, rate: 1.1 }); },
+    shatter() { s('shatter', { vol: 0.9 }); },
+    clear() { s('fan', { vol: 0.9 }); s('j_PIZZI02', { vol: 0.7, t: 0.1 }); },
+    win() { s('j_SAX10', { vol: 0.85 }); s('stack2', { vol: 0.7, t: 0.15 }); },
+    lose() { s('j_PIZZI05', { vol: 0.8 }); s('lowdown', { vol: 0.35, t: 0.2 }); },
+    unlock() { s('j_SAX04', { vol: 0.8 }); s('threetone', { vol: 0.3, t: 0.1 }); },
+    tick() { s('tick', { vol: 0.5 }); },
+    boss() { s('j_HIT09', { vol: 0.8 }); s('metal', { vol: 0.6, rate: 0.55 }); },
+    swap() { s('shove', { vol: 0.8 }); },
+    shuffle() { s('shuffle', { vol: 0.9 }); },
+    fever() { s('powerup', { vol: 0.5 }); s('j_STEEL04', { vol: 0.6, t: 0.05 }); },
+    feverEnd() { s('lowdown', { vol: 0.4 }); },
+    dice() { s('dice', { vol: 0.8 }); },
+  };
+  A.play = (name, ...a) => { try { if (A.sfx[name]) A.sfx[name](...a); } catch (e) { } };
+
+  /* ---------------- Música ---------------- */
+  const mus = { cur: null, name: null, want: null };
+  A.music = (name) => {
+    mus.want = name;
+    if (!A.started) return;
+    if (mus.name === name && mus.cur) return;
+    const old = mus.cur;
+    mus.name = name;
+    if (!name) { fadeOut(old); mus.cur = null; return; }
+    const el = new Audio(`audio/music/${TRACKS[name] || name}.mp3`);
+    el.loop = true; el.preload = 'auto';
+    const node = { el, g: null };
+    if (ctx) {
+      try {
+        const src = ctx.createMediaElementSource(el);
+        node.g = ctx.createGain(); node.g.gain.value = 0.0001;
+        src.connect(node.g); node.g.connect(musFilter);
+        node.g.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.2);
+      } catch (e) { node.g = null; }
+    }
+    if (!node.g) { el.volume = A.musVol; }
+    el.play().catch(() => { });
+    mus.cur = node;
+    fadeOut(old);
+  };
+  function fadeOut(n) {
+    if (!n) return;
+    if (n.g && ctx) {
+      n.g.gain.cancelScheduledValues(ctx.currentTime);
+      n.g.gain.setValueAtTime(Math.max(0.0001, n.g.gain.value), ctx.currentTime);
+      n.g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1);
+      setTimeout(() => { n.el.pause(); n.el.src = ''; }, 1200);
+    } else { n.el.pause(); }
+  }
+  // muda o "clima": no salão a música fica levemente abafada e abre na Febre
+  A.mood = (m) => {
+    if (!ctx) return;
+    const f = m === 'fever' ? 20000 : m === 'round' ? 5200 : m === 'tense' ? 1600 : 20000;
+    musFilter.frequency.cancelScheduledValues(ctx.currentTime);
+    musFilter.frequency.setTargetAtTime(f, ctx.currentTime, 0.35);
+    if (mus.cur && mus.cur.el) mus.cur.el.playbackRate = m === 'fever' ? 1.04 : 1;
+  };
 
   A.unlock = () => {
     init();
     if (ctx && ctx.state === 'suspended') ctx.resume();
-    if (!A.started && ctx) { A.started = true; music.start(); }
+    if (!A.started) { A.started = true; if (mus.want) A.music(mus.want); }
   };
-  A.setVol = (sfx, mus) => {
-    A.sfxVol = sfx; A.musVol = mus;
+  A.setVol = (sfx, musV) => {
+    A.sfxVol = sfx; A.musVol = musV;
     if (sfxBus) sfxBus.gain.setTargetAtTime(sfx, ctx.currentTime, 0.05);
-    if (musBus) musBus.gain.setTargetAtTime(mus * 0.6, ctx.currentTime, 0.2);
+    if (musBus) musBus.gain.setTargetAtTime(musV, ctx.currentTime, 0.1);
+    if (mus.cur && !mus.cur.g) mus.cur.el.volume = musV;
   };
-
-  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
-
-  function tone({ f = 440, type = 'sine', t = 0, dur = 0.15, vol = 0.3, atk = 0.005, f2 = null, bus = sfxBus, rev = 0, detune = 0, q = null, lp = null }) {
-    if (!ctx) return;
-    const now = ctx.currentTime + t;
-    const o = ctx.createOscillator(); const g = ctx.createGain();
-    o.type = type; o.frequency.setValueAtTime(f, now); o.detune.value = detune;
-    if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), now + dur);
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(vol, now + atk);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    let last = o;
-    if (lp) { const fl = ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = lp; if (q) fl.Q.value = q; o.connect(fl); last = fl; }
-    last.connect(g); g.connect(bus);
-    if (rev && A.rev) { const s = ctx.createGain(); s.gain.value = rev; g.connect(s); s.connect(A.rev.input); }
-    o.start(now); o.stop(now + dur + 0.05);
-  }
-  function noise({ t = 0, dur = 0.08, vol = 0.2, bp = 2000, q = 1, type = 'bandpass', bus = sfxBus, f2 = null }) {
-    if (!ctx) return;
-    const now = ctx.currentTime + t;
-    const s = ctx.createBufferSource(); s.buffer = noiseBuf;
-    const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(bp, now); fl.Q.value = q;
-    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, now + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(vol, now); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    s.connect(fl); fl.connect(g); g.connect(bus);
-    s.start(now, Math.random() * 0.5); s.stop(now + dur + 0.02);
-  }
-
-  const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36];
-  A.sfx = {
-    hover() { tone({ f: 1800, type: 'sine', dur: 0.03, vol: 0.04 }); },
-    click() { tone({ f: 900, type: 'triangle', dur: 0.06, vol: 0.12, f2: 600 }); noise({ dur: 0.03, vol: 0.05, bp: 4000 }); },
-    flip() { noise({ dur: 0.07, vol: 0.18, bp: 3200, q: 0.8, f2: 1400 }); tone({ f: 520 + Math.random() * 60, type: 'triangle', dur: 0.07, vol: 0.07 }); },
-    flipDown() { noise({ dur: 0.06, vol: 0.1, bp: 1800, f2: 900 }); },
-    deal(i = 0) { noise({ t: 0, dur: 0.05, vol: 0.08, bp: 2600 + i * 40 }); },
-    match(combo = 1) {
-      const base = 72;
-      const n1 = base + PENTA[Math.min(combo - 1, PENTA.length - 1)];
-      tone({ f: mtof(n1), type: 'triangle', dur: 0.5, vol: 0.22, rev: 0.6 });
-      tone({ f: mtof(n1 + 7), type: 'sine', t: 0.07, dur: 0.6, vol: 0.16, rev: 0.6 });
-      tone({ f: mtof(n1 + 12), type: 'sine', t: 0.14, dur: 0.7, vol: 0.1, rev: 0.8 });
-      if (combo >= 4) tone({ f: mtof(n1 + 19), type: 'square', t: 0.2, dur: 0.25, vol: 0.04, lp: 3000 });
-    },
-    mismatch() {
-      tone({ f: 220, type: 'sawtooth', dur: 0.32, vol: 0.12, f2: 110, lp: 900 });
-      tone({ f: 165, type: 'square', t: 0.06, dur: 0.3, vol: 0.07, f2: 80, lp: 600 });
-    },
-    chips(i = 0) { tone({ f: mtof(76 + (i % 12)), type: 'square', dur: 0.06, vol: 0.06, lp: 2500 }); },
-    mult(i = 0) { tone({ f: mtof(64 + (i % 12)), type: 'sawtooth', dur: 0.09, vol: 0.08, lp: 1800 }); },
-    xmult() { tone({ f: 110, type: 'sawtooth', dur: 0.35, vol: 0.18, f2: 440, lp: 2000 }); noise({ dur: 0.25, vol: 0.15, bp: 800, f2: 3000 }); },
-    coin() { tone({ f: 1318, type: 'square', dur: 0.08, vol: 0.07, lp: 4000 }); tone({ f: 1975, type: 'square', t: 0.07, dur: 0.18, vol: 0.07, lp: 4000 }); },
-    score(big = false) {
-      noise({ dur: big ? 0.6 : 0.3, vol: big ? 0.25 : 0.14, bp: 400, f2: 4000, q: 0.6 });
-      tone({ f: big ? 98 : 131, type: 'sine', dur: 0.5, vol: 0.28, f2: big ? 49 : 65 });
-    },
-    buy() { [0, 4, 7, 12].forEach((s, i) => tone({ f: mtof(72 + s), type: 'triangle', t: i * 0.05, dur: 0.2, vol: 0.12, rev: 0.3 })); A.sfx.coin(); },
-    sell() { [12, 7, 4].forEach((s, i) => tone({ f: mtof(72 + s), type: 'triangle', t: i * 0.05, dur: 0.18, vol: 0.1 })); A.sfx.coin(); },
-    reroll() { for (let i = 0; i < 6; i++) tone({ f: mtof(70 + i * 3), type: 'square', t: i * 0.03, dur: 0.05, vol: 0.05, lp: 3000 }); },
-    pack() { noise({ dur: 0.5, vol: 0.2, bp: 600, f2: 5000, q: 0.5 }); [0, 7, 12, 19].forEach((s, i) => tone({ f: mtof(67 + s), type: 'sine', t: 0.2 + i * 0.07, dur: 0.6, vol: 0.12, rev: 0.7 })); },
-    use() { tone({ f: 400, type: 'sine', dur: 0.4, vol: 0.15, f2: 1600, rev: 0.6 }); noise({ dur: 0.3, vol: 0.08, bp: 3000, f2: 8000 }); },
-    peek() { tone({ f: 1200, type: 'sine', dur: 0.25, vol: 0.08, f2: 1800, rev: 0.5 }); },
-    shatter() { for (let i = 0; i < 8; i++) tone({ f: 2000 + Math.random() * 3000, type: 'triangle', t: i * 0.02, dur: 0.12, vol: 0.05 }); noise({ dur: 0.3, vol: 0.18, bp: 6000, q: 0.5 }); },
-    clear() { [0, 4, 7, 11, 14, 19].forEach((s, i) => tone({ f: mtof(67 + s), type: 'triangle', t: i * 0.06, dur: 0.6, vol: 0.12, rev: 0.7 })); },
-    win() { [[0, 0], [4, .12], [7, .24], [12, .36], [16, .52], [19, .64], [24, .8]].forEach(([s, t]) => { tone({ f: mtof(67 + s), type: 'triangle', t, dur: 0.7, vol: 0.14, rev: 0.7 }); tone({ f: mtof(55 + s), type: 'sine', t, dur: 0.8, vol: 0.08 }); }); },
-    lose() { [7, 5, 3, 0].forEach((s, i) => tone({ f: mtof(55 + s), type: 'sawtooth', t: i * 0.22, dur: 0.5, vol: 0.09, lp: 1200 })); },
-    unlock() { [0, 7, 12, 16, 19, 24].forEach((s, i) => tone({ f: mtof(72 + s), type: 'sine', t: i * 0.08, dur: 0.9, vol: 0.12, rev: 0.9 })); noise({ dur: 1, vol: 0.06, bp: 6000, q: 2 }); },
-    tick() { tone({ f: 2000, type: 'square', dur: 0.02, vol: 0.04 }); },
-    boss() { tone({ f: 55, type: 'sawtooth', dur: 1.4, vol: 0.2, lp: 400 }); tone({ f: 58, type: 'sawtooth', dur: 1.4, vol: 0.15, lp: 400 }); noise({ dur: 1.2, vol: 0.1, bp: 200, q: 2 }); },
-    swap() { tone({ f: 300, type: 'sine', dur: 0.2, vol: 0.1, f2: 900 }); tone({ f: 900, type: 'sine', t: 0.1, dur: 0.2, vol: 0.1, f2: 300 }); },
-  };
-  A.play = (name, ...a) => { try { if (ctx && A.sfx[name]) A.sfx[name](...a); } catch (e) { } };
-
-  /* ---------------- Música generativa ---------------- */
-  const music = {
-    step: 0, next: 0, timer: null, bpm: 84,
-    // progressão: i - VI - III - VII em Lá menor (com cores)
-    chords: [[57, 60, 64, 67], [53, 57, 60, 64], [48, 52, 55, 59], [55, 59, 62, 65]],
-    start() {
-      this.next = ctx.currentTime + 0.1;
-      this.timer = setInterval(() => this.tick(), 60);
-    },
-    tick() {
-      if (!ctx || A.musVol <= 0.001) { if (ctx) this.next = ctx.currentTime + 0.1; return; }
-      const spb = 60 / this.bpm / 2; // colcheias
-      while (this.next < ctx.currentTime + 0.25) {
-        this.play(this.step, this.next, spb);
-        this.next += spb; this.step++;
-      }
-    },
-    play(step, t, spb) {
-      const bar = Math.floor(step / 16) % 4;
-      const ch = this.chords[bar];
-      const inBar = step % 16;
-      const I = A.intensity;
-      const rt = t - ctx.currentTime;
-      if (inBar === 0) {
-        ch.forEach((n, i) => tone({ f: mtof(n), type: 'sawtooth', t: rt, dur: spb * 16, vol: 0.022, atk: 0.8, lp: 700 + I * 900, detune: (i % 2 ? 7 : -7), bus: musBus, rev: 0.5 }));
-        tone({ f: mtof(ch[0] - 24), type: 'sine', t: rt, dur: spb * 8, vol: 0.12, atk: 0.05, bus: musBus });
-      }
-      if (inBar === 8) tone({ f: mtof(ch[0] - 24), type: 'sine', t: rt, dur: spb * 8, vol: 0.09, atk: 0.05, bus: musBus });
-      // arpejo
-      const pat = [0, 2, 1, 3, 2, 1, 3, 2];
-      if (inBar % 2 === 0 || I > 0.5) {
-        const n = ch[pat[(inBar >> (I > 0.5 ? 0 : 1)) % 8]] + 12 + (inBar >= 12 && I > 0.3 ? 12 : 0);
-        tone({ f: mtof(n), type: 'triangle', t: rt, dur: spb * 1.6, vol: 0.035 + I * 0.02, bus: musBus, rev: 0.6 });
-      }
-      // percussão suave quando o combo cresce
-      if (I > 0.15 && inBar % 4 === 2) noise({ t: rt, dur: 0.04, vol: 0.03 + I * 0.04, bp: 8000, q: 1, bus: musBus });
-      if (I > 0.35 && (inBar === 0 || inBar === 8)) tone({ f: 70, type: 'sine', t: rt, dur: 0.25, vol: 0.18 * I, f2: 40, bus: musBus });
-      if (I > 0.6 && inBar % 2 === 1) noise({ t: rt, dur: 0.02, vol: 0.02, bp: 10000, q: 1, bus: musBus });
-    },
-  };
+  // compat: alguns lugares setam intensidade
+  Object.defineProperty(A, 'intensity', { set(v) { }, get() { return 0; } });
+  document.addEventListener('visibilitychange', () => {
+    if (!mus.cur) return;
+    if (document.hidden) mus.cur.el.pause(); else if (A.started) mus.cur.el.play().catch(() => { });
+  });
 })();

@@ -93,18 +93,27 @@
   /* ============ telas ============ */
   U.show = (name) => {
     screen = name;
-    U.hideTip(); U.closePop();
+    U.hideTip(); U.closePop(); U.hideCoach();
     const run = M.run;
     const runScreens = ['select', 'round', 'cashout', 'shop'];
     if (runScreens.includes(name)) {
       if (!$('#side')) U.renderRunLayout();
       M.bg.set(name === 'shop' ? 'shop' : (run.round === 2 && name !== 'cashout' ? 'boss' : 'run'));
+      if (name === 'shop') M.audio.music('shop');
+      else if (name === 'round' || name === 'select') M.audio.music(run.round === 2 ? 'boss' : (run.ante % 2 ? 'round1' : 'round2'));
+      M.audio.mood(name === 'round' ? 'round' : 'normal');
+      $('#stage').dataset.screen = name;
       U.renderSide(); U.renderRelics(); U.renderConsumables();
       const C = $('#center'); C.className = 'center-' + name;
       ({ select: U.renderSelect, round: U.renderRound, cashout: U.renderCashout, shop: U.renderShop })[name]();
     } else {
       $('#screen').innerHTML = '';
-      M.audio.intensity = 0; M.bg.tInt = 0;
+      $('#stage').dataset.screen = name;
+      document.body.classList.remove('fever');
+      M.bg.tInt = 0;
+      if (name !== 'gameover') M.audio.music('menu');
+      else M.audio.music(null);
+      M.audio.mood('normal');
       ({ menu: U.renderMenu, newrun: U.renderNewRun, gameover: U.renderGameOver, victory: U.renderVictory, collection: U.renderCollection, achievements: U.renderAch, stats: U.renderStats })[name]();
     }
   };
@@ -115,6 +124,7 @@
       <div class="run-layout">
         <aside id="side"></aside>
         <main class="run-main">
+          <div id="mhud" class="mhud"></div>
           <div class="topbar">
             <div class="relic-bar"><div id="relics"></div><div class="slot-count" id="relic-count"></div></div>
             <div class="consum-bar"><div id="consum"></div><div class="slot-count" id="consum-count"></div></div>
@@ -124,7 +134,18 @@
       </div>`;
   };
 
-  /* ============ painel lateral ============ */
+  /* ============ HUD (computador: painel lateral · celular: barra no topo) ============ */
+  const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.3C.3 8.4 2 4.5 5.8 4.1 8.2 3.9 10 5.3 12 7.4c2-2.1 3.8-3.5 6.2-3.3C22 4.5 23.7 8.4 22 11.7 19.5 16.4 12 21 12 21z"/></svg>';
+  U.h = (k) => $$(`[data-h="${k}"]`);
+  U.hAnchor = (k) => U.h(k).find(e => e.offsetParent !== null) || U.h(k)[0];
+  U.hSet = (k, v, pop = true) => U.h(k).forEach(e => { if (e.textContent !== String(v)) { e.textContent = v; if (pop) { e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } } });
+  U.hearts = (n, max) => {
+    max = Math.max(n, max || n);
+    if (max > 10) return `<span class="hearts big">${HEART}<b>${n}</b></span>`;
+    let h = '';
+    for (let i = 0; i < max; i++) h += `<i class="${i < n ? 'on' : 'off'}">${HEART}</i>`;
+    return `<span class="hearts">${h}</span>`;
+  };
   U.blindInfo = (round) => {
     const run = M.run;
     if (round === 2) { const b = M.BOSS[run.bossId]; return { n: b.n, i: b.i, c: b.c, boss: b }; }
@@ -134,79 +155,101 @@
     const run = M.run, rs = run.rs, side = $('#side');
     const bi = U.blindInfo(run.round);
     const inRound = screen === 'round' && rs;
+    const res = G.calcRes();
+    const tent = inRound ? rs.tent : res.tent, visl = inRound ? rs.visl : res.visl;
     side.innerHTML = `
       <div class="side-blind" style="--bc:${bi.c}">
         <div class="sb-name">${bi.i} ${bi.n}</div>
-        ${inRound ? `<div class="sb-target"><span>Alvo</span><b>${M.fmt(rs.target)}</b></div><div class="sb-reward">Recompensa: <b class="money">${'$'.repeat(Math.max(0, G.reward()))}${G.reward() ? '' : '—'}</b></div>`
+        ${inRound ? `<div class="sb-target"><span>Meta</span><b data-h="target">${M.fmt(rs.target)}</b></div>`
         : `<div class="sb-sub">${screen === 'shop' ? 'Loja' : screen === 'cashout' ? 'Vitória!' : 'Escolha seu salão'}</div>`}
       </div>
-      <div class="side-score${inRound ? '' : ' dim'}" id="score-box">
-        <label>Pontos do salão</label>
-        <div class="score-num" id="hud-score">${inRound ? M.fmt(rs.score) : '—'}</div>
-        <div class="progress"><i id="hud-prog"></i></div>
+      <div class="side-score${inRound ? '' : ' dim'}" data-h="scorebox">
+        <label>Seus pontos</label>
+        <div class="score-num" data-h="score">${inRound ? M.fmt(rs.score) : '—'}</div>
+        <div class="progress"><i data-h="prog"></i></div>
       </div>
       <div class="side-calc${inRound ? '' : ' dim'}">
-        <div class="calc-box chips" id="hud-chips">0</div><div class="calc-x">×</div><div class="calc-box mult" id="hud-mult">0</div>
+        <div class="calc-box chips" data-h="chips">0</div><div class="calc-x">×</div><div class="calc-box mult" data-h="mult">0</div>
       </div>
-      <div class="side-pair" id="hud-pair">${inRound ? 'Encontre os pares!' : ''}</div>
+      <div class="side-pair" data-h="pair">${inRound ? 'Encontre os pares!' : ''}</div>
+      <div class="side-hearts${inRound ? '' : ' dim'}"><label>Vidas</label><div data-h="hearts">${U.hearts(tent, inRound ? rs.tentMax : tent)}</div></div>
       <div class="side-res">
-        <div class="res tent${inRound ? '' : ' dim'}"><label>Tentativas</label><b id="hud-tent">${inRound ? rs.tent : G.calcRes().tent}</b></div>
-        <button class="res visl${inRound ? '' : ' dim'}" id="btn-peek" ${inRound ? '' : 'disabled'} data-tip="txt:${encodeURIComponent('<div class=tip-title>👁 Vislumbre</div><div class=tip-desc>Espie uma carta sem gastar Tentativa. Clique aqui e depois numa carta (ou use o botão direito).</div>')}"><label>Vislumbres</label><b id="hud-visl">${inRound ? rs.visl : G.calcRes().visl}</b></button>
-      </div>
-      <div class="side-combo${inRound ? '' : ' dim'}" id="combo-box">
-        <label>Combo</label><b id="hud-combo">x${inRound ? rs.combo : 0}</b>
-        <div class="combo-meter"><i id="hud-combo-bar"></i></div>
-      </div>
-      <div class="side-row">
-        <div class="side-money"><label>Dinheiro</label><b id="hud-money">$${run.money}</b></div>
+        <button class="res visl${inRound ? '' : ' dim'}" data-h="peekbtn" ${inRound ? '' : 'disabled'} data-tip="txt:${encodeURIComponent('<div class=tip-title>👁 Vislumbre</div><div class=tip-desc>Espia uma carta <b>de graça</b>, sem perder vida. Clique aqui e depois na carta (ou botão direito / Espaço).</div>')}"><label>👁 Espiar</label><b data-h="visl">${visl}</b></button>
+        <div class="res combo${inRound ? '' : ' dim'}" data-h="combobox"><label>🔥 Combo</label><b data-h="combo">x${inRound ? rs.combo : 0}</b></div>
       </div>
       <div class="side-row two">
-        <div class="side-stat"><label>Círculo</label><b>${run.ante}<small>/8</small></b></div>
-        <div class="side-stat"><label>Salão</label><b>${run.round + 1}<small>/3</small></b></div>
+        <div class="side-money"><label>Dinheiro</label><b data-h="money">$${run.money}</b></div>
+        <div class="side-stat"><label>Círculo</label><b>${run.ante}<small>/8</small></b><small class="sub">salão ${run.round + 1}/3</small></div>
       </div>
       <div class="side-btns">
-        <button class="btn small" id="btn-deck">🂠 Baralho</button>
-        <button class="btn small" id="btn-runinfo">ℹ Naipes</button>
-        <button class="btn small" id="btn-pause">☰ Menu</button>
+        <button class="btn small" data-act2="deck">🂠 Baralho</button>
+        <button class="btn small" data-act2="info">ℹ Naipes</button>
+        <button class="btn small" data-act2="pause">☰ Menu</button>
       </div>
-      <div id="timer-bar" class="timer-bar"><i></i></div>`;
+      <div class="timer-bar" data-h="timer"><i></i></div>`;
+    // HUD do celular
+    $('#mhud').innerHTML = `
+      <div class="mh-row1">
+        <div class="mh-blind" style="--bc:${bi.c}"><span class="mh-bn">${bi.i} ${bi.n}</span>${inRound ? `<span class="mh-goal">Meta <b data-h="target">${M.fmt(rs.target)}</b></span>` : `<span class="mh-goal">Círculo ${run.ante}/8 · ${run.round + 1}/3</span>`}</div>
+        <div class="mh-score${inRound ? '' : ' dim'}" data-h="scorebox"><b data-h="score">${inRound ? M.fmt(rs.score) : '—'}</b><div class="progress"><i data-h="prog"></i></div></div>
+        <button class="mh-menu" data-act2="pause" aria-label="Menu">☰</button>
+      </div>
+      <div class="mh-row2">
+        <div class="mh-hearts${inRound ? '' : ' dim'}" data-h="hearts">${U.hearts(tent, inRound ? rs.tentMax : tent)}</div>
+        <button class="mh-chip visl${inRound ? '' : ' dim'}" data-h="peekbtn" ${inRound ? '' : 'disabled'}>👁 <b data-h="visl">${visl}</b></button>
+        <div class="mh-chip combo${inRound ? '' : ' dim'}" data-h="combobox">🔥 <b data-h="combo">x${inRound ? rs.combo : 0}</b></div>
+        <div class="mh-chip money"><b data-h="money">$${run.money}</b></div>
+        <button class="mh-chip" data-act2="deck" aria-label="Baralho">🂠</button>
+      </div>
+      <div class="timer-bar" data-h="timer"><i></i></div>`;
     U.updateHUD();
   };
 
   U.updateHUD = () => {
     const run = M.run; if (!run) return;
     const rs = run.rs;
-    const m = $('#hud-money'); if (m) m.textContent = '$' + run.money;
+    U.h('money').forEach(e => e.textContent = '$' + run.money);
     if (!rs || screen !== 'round') return;
-    const set = (id, v) => { const e = $(id); if (e && e.textContent !== String(v)) { e.textContent = v; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } };
-    set('#hud-tent', rs.tent);
-    set('#hud-visl', rs.visl);
-    set('#hud-combo', 'x' + rs.combo);
-    const tb = $('#hud-tent')?.parentElement; tb && tb.classList.toggle('danger', rs.tent <= 2);
-    const cb = $('#hud-combo-bar'); if (cb) cb.style.width = Math.min(100, rs.combo / 10 * 100) + '%';
-    $('#combo-box')?.classList.toggle('hot', rs.combo >= 5);
-    $('#combo-box')?.classList.toggle('warm', rs.combo >= 3);
+    rs.tentMax = Math.max(rs.tentMax || 0, rs.tent);
+    U.hSet('visl', rs.visl);
+    U.hSet('combo', 'x' + rs.combo);
+    const hh = U.hearts(rs.tent, rs.tentMax);
+    U.h('hearts').forEach(e => { if (e._t !== rs.tent + '/' + rs.tentMax) { const lost = e._n != null && rs.tent < e._n; e.innerHTML = hh; e._t = rs.tent + '/' + rs.tentMax; if (lost) { e.classList.remove('hurt'); void e.offsetWidth; e.classList.add('hurt'); } e._n = rs.tent; } e.classList.toggle('danger', rs.tent <= 2); });
+    U.h('combobox').forEach(e => { e.classList.toggle('warm', rs.combo >= 3); e.classList.toggle('hot', rs.combo >= 5); });
     $('#board-area')?.classList.toggle('warm', rs.combo >= 3 && rs.combo < 5);
     $('#board-area')?.classList.toggle('hot', rs.combo >= 5);
-    const p = $('#hud-prog'); if (p) p.style.width = Math.min(100, rs.score / rs.target * 100) + '%';
-    const sc = $('#hud-score'); if (sc && !U._animScore) sc.textContent = M.fmt(rs.score);
-    $('#btn-peek')?.classList.toggle('active', B.peekMode);
-    $('#btn-peek')?.classList.toggle('empty', rs.visl <= 0);
+    U.h('prog').forEach(p => { p.style.width = Math.min(100, rs.score / rs.target * 100) + '%'; p.parentElement.classList.toggle('near', rs.score / rs.target >= 0.75); });
+    if (!U._animScore) U.h('score').forEach(e => e.textContent = M.fmt(rs.score));
+    U.h('peekbtn').forEach(e => { e.classList.toggle('active', B.peekMode); e.classList.toggle('empty', rs.visl <= 0); });
     const pend = $('#pending');
     if (pend) pend.innerHTML = [...rs.pending.map(p => `<span class="pend">${M.SCROLL[p].i} ${M.SCROLL[p].n}</span>`), rs.ambar ? `<span class="pend">🟠 Âmbar x${rs.ambar}</span>` : ''].join('');
   };
   U.updateMoney = (delta) => {
-    const m = $('#hud-money'); if (!m) return;
-    m.textContent = '$' + M.run.money;
-    m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop');
-    if (delta) M.fx.floatEl(m, (delta > 0 ? '+$' : '-$') + Math.abs(delta), delta > 0 ? 'money' : 'bad');
+    U.h('money').forEach(m => { m.textContent = '$' + M.run.money; m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop'); });
+    const m = U.hAnchor('money');
+    if (delta && m) M.fx.floatEl(m, (delta > 0 ? '+$' : '-$') + Math.abs(delta), delta > 0 ? 'money' : 'bad');
     if (screen === 'shop') U.refreshShopAfford();
   };
   U.timerBar = (k) => {
-    const t = $('#timer-bar'); if (!t) return;
-    t.classList.toggle('on', k >= 0);
-    if (k >= 0) { t.firstElementChild.style.width = (k * 100) + '%'; t.classList.toggle('urgent', k < 0.3); }
+    U.h('timer').forEach(t => {
+      t.classList.toggle('on', k >= 0);
+      if (k >= 0) { t.firstElementChild.style.width = (k * 100) + '%'; t.classList.toggle('urgent', k < 0.3); }
+    });
   };
+
+  /* ============ dicas guiadas (aparecem uma vez) ============ */
+  U.coach = (key, html, ms = 4200) => {
+    const P = M.profile; P.tips = P.tips || {};
+    if (P.tips[key]) return;
+    P.tips[key] = 1; M.save.saveProfile();
+    U.hideCoach();
+    const d = document.createElement('div'); d.className = 'coach'; d.id = 'coach';
+    d.innerHTML = `<div class="coach-owl">🦉</div><div class="coach-txt">${html}</div>`;
+    document.body.appendChild(d);
+    d.onclick = U.hideCoach;
+    clearTimeout(U._coachT); U._coachT = setTimeout(U.hideCoach, ms);
+  };
+  U.hideCoach = () => { const c = $('#coach'); if (c) { c.classList.add('out'); setTimeout(() => c.remove(), 300); } };
 
   /* ============ relíquias e consumíveis ============ */
   U.renderRelics = () => {
@@ -274,19 +317,19 @@
       const state = round < run.round ? 'done' : round === run.round ? 'cur' : 'next';
       const tgt = G.target(round);
       const tag = round < 2 ? M.TAG[run.tags[round]] : null;
+      const rw = G.reward(round);
       return `<div class="blind-card ${state}${round === 2 ? ' boss' : ''}" style="--bc:${bi.c}">
-        <div class="bc-top">${state === 'done' ? 'Concluído' : state === 'cur' ? 'Atual' : 'A seguir'}</div>
-        <div class="bc-chip"><span>${bi.i}</span></div>
-        <div class="bc-name">${bi.n}</div>
-        ${bi.boss ? `<div class="bc-boss">${bi.boss.d}${run.rs == null && bi.boss.id === 'eclipse' ? '' : ''}</div>` : `<div class="bc-boss sub">${M.pairsFor(run.ante)} pares por tabuleiro</div>`}
-        <div class="bc-target"><label>Pontuação mínima</label><b>${M.fmt(tgt)}</b></div>
-        <div class="bc-reward">Recompensa <b class="money">${G.reward(round) ? '$' + G.reward(round) : '—'}</b></div>
-        ${state === 'cur' ? `<button class="btn big orange" id="btn-play">Entrar</button>` : ''}
-        ${tag ? `<div class="bc-skip">${state === 'cur' ? `<button class="btn small" id="btn-skip">Pular salão</button>` : ''}<div class="bc-tag" data-tip="col-tag:${tag.id}">${tag.i} <span>${tag.n}</span></div></div>` : ''}
+        <div class="bc-top">${state === 'done' ? '✓ Vencido' : state === 'cur' ? 'Próximo desafio' : round === 2 ? 'Chefe do Círculo' : 'Depois'}</div>
+        <div class="bc-head"><div class="bc-chip"><span>${bi.i}</span></div>
+          <div class="bc-titles"><div class="bc-name">${bi.n}</div><div class="bc-mini">Meta <b>${M.fmt(tgt)}</b> · <b class="money">$${rw}</b></div></div></div>
+        ${bi.boss ? `<div class="bc-boss">⚠ ${bi.boss.d}</div>` : ''}
+        <div class="bc-goal">Faça <b>${M.fmt(tgt)}</b> pontos encontrando pares</div>
+        <div class="bc-reward">Prêmio <b class="money">${rw ? '$' + rw : '—'}</b></div>
+        ${state === 'cur' ? `<button class="btn big orange bc-play" id="btn-play">▶ Jogar</button>` : ''}
+        ${tag && state === 'cur' ? `<div class="bc-skip"><button class="btn small" id="btn-skip">Pular e ganhar:</button><div class="bc-tag" data-tip="col-tag:${tag.id}">${tag.i} <span>${tag.n}</span></div></div>` : ''}
       </div>`;
     }).join('');
-    C.innerHTML = `<div class="select-wrap"><div class="select-title">Círculo ${run.ante} ${run.ante > 8 ? '<small>(sem fim)</small>' : ''}</div><div class="blinds">${cards}</div>
-      <div class="select-hint">Dica: cada salão vencido leva à loja. Pular um salão dá uma <b class="hl">Bênção</b>.</div></div>`;
+    C.innerHTML = `<div class="select-wrap"><div class="select-title">Círculo ${run.ante}<small>${run.ante > 8 ? ' (sem fim)' : ' de 8'}</small></div><div class="blinds">${cards}</div></div>`;
     $('#btn-play').onclick = (e) => { e.currentTarget.disabled = true; M.audio.play('click'); B.startRound(); };
     const sk = $('#btn-skip'); if (sk) sk.onclick = () => G.skip();
   };
@@ -299,9 +342,10 @@
     if (rs && rs.boss === 'eclipse') bossTxt = `Cartas de <b class="s-${rs.flags.eclipse}">${M.SUITS[rs.flags.eclipse].n}</b> não pontuam`;
     C.innerHTML = `
       ${boss ? `<div class="boss-banner" style="--bc:${boss.c}">${boss.i} <b>${boss.n}</b> — ${bossTxt}</div>` : ''}
+      <div class="mcalc"><div class="calc-box chips" data-h="chips">0</div><div class="calc-x">×</div><div class="calc-box mult" data-h="mult">0</div><div class="mpair" data-h="pair"></div></div>
       <div id="pending" class="pending"></div>
-      <div id="board-area"><div id="board"></div></div>
-      <div class="round-hint" id="round-hint">Clique para virar · <b>Botão direito</b> ou <b>👁</b> para Vislumbre</div>`;
+      <div id="board-area"><div id="board"></div><div class="fever-frame"></div></div>
+      <div class="round-hint" id="round-hint">Vire 2 cartas iguais · <b>Botão direito</b> ou <b>Espaço</b> = espiar</div>`;
     if (rs && rs.cards.length) { B.render(true); }
     U.updateHUD();
   };
@@ -309,21 +353,23 @@
     const a = $('#board-area');
     if (!a) return { w: innerWidth * 0.6, h: innerHeight * 0.6 };
     const r = a.getBoundingClientRect();
-    const pad = innerWidth < 900 ? 24 : 48;
+    const pad = innerWidth < 900 ? 20 : 48;
     return { w: Math.max(160, r.width - pad), h: Math.max(160, r.height - pad) };
   };
   U.previewBar = (t) => {
     const d = document.createElement('div'); d.className = 'preview-bar';
-    d.innerHTML = `<div class="pv-label">MEMORIZE!</div><div class="pv-track"><i style="animation-duration:${t}s"></i></div><div class="pv-skip">clique para começar</div>`;
+    d.innerHTML = `<div class="pv-label">MEMORIZE!</div><div class="pv-track"><i style="animation-duration:${t}s"></i></div><div class="pv-skip">toque para começar</div>`;
     $('#center').appendChild(d);
     return d;
   };
 
-  U.showPairInfo = (c, kindTxt, combo) => {
-    const el = $('#hud-pair'); if (!el) return;
+  U.showPairInfo = (c, kindTxt) => {
     const name = c.enh === 'stone' ? 'Pedra' : `${M.RANKS[c.rank - 1].n} de ${M.SUITS[c.suit].n}`;
-    el.innerHTML = `<span class="pi-name">${name}</span><span class="pi-kind k-${kindTxt === 'Lembrança' ? 'mem' : 'luck'}">${kindTxt}</span>`;
-    el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    U.h('pair').forEach(el => {
+      el.innerHTML = `<span class="pi-name">${name}</span><span class="pi-kind k-${kindTxt === 'Lembrança' ? 'mem' : 'luck'}">${kindTxt}</span>`;
+      el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    });
+    $('.mcalc')?.classList.add('on');
   };
   U.comboPop = (combo) => {
     const txt = combo >= 12 ? 'TRANSCENDENTE' : combo >= 9 ? 'LENDÁRIO' : combo >= 7 ? 'IMPARÁVEL' : combo >= 5 ? 'EM CHAMAS' : 'COMBO';
@@ -333,55 +379,60 @@
   /* animação da pontuação estilo cassino */
   U.animateScore = async (res, sa, sb) => {
     const run = M.run, rs = run.rs;
-    const ch = $('#hud-chips'), mu = $('#hud-mult');
-    const setBox = (el, v) => { el.textContent = typeof v === 'number' && v % 1 ? M.fmtX(v) : M.fmt(v); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); };
+    const setBox = (k, v) => U.h(k).forEach(el => { el.textContent = typeof v === 'number' && v % 1 ? M.fmtX(v) : M.fmt(v); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); });
     const fast = M.speed >= 3;
-    const dl = fast ? 70 : 150;
+    const dl = fast ? 70 : 140;
     let i = 0;
     for (const e of res.ev) {
       i++;
-      if (e.type === 'base') { setBox(ch, e.chips); setBox(mu, e.mult); M.fx.floatEl(sa, `+${e.chips}`, 'chips'); M.audio.play('chips', 0); await M.sleep(dl + 60); continue; }
+      if (e.type === 'base') { setBox('chips', e.chips); setBox('mult', e.mult); M.fx.floatEl(sa, `+${e.chips}`, 'chips'); M.audio.play('chips', 0); await M.sleep(dl + 60); continue; }
       let anchor = sa;
       if (e.src === 'relic') { anchor = $(`#relics .relic[data-i="${e.i}"]`) || sa; U.bumpRelic(e.i); }
-      else if (e.src === 'combo') anchor = $('#combo-box') || sa;
-      else if (e.src === 'blind' || e.src === 'scroll') anchor = $('#hud-pair') || sa;
-      if (e.type === 'chips') { setBox(ch, e.chips); M.fx.floatEl(anchor, `+${M.fmt(e.v)}`, 'chips'); M.audio.play('chips', i); }
-      else if (e.type === 'mult') { setBox(mu, e.mult); M.fx.floatEl(anchor, `+${M.fmt(e.v)} Mult`, 'mult'); M.audio.play('mult', i); }
-      else if (e.type === 'xmult') { setBox(mu, e.mult); M.fx.floatEl(anchor, `x${M.fmtX(e.v)} Mult`, 'xmult'); M.audio.play('xmult'); M.fx.shake(4, 160); }
+      else if (e.src === 'combo') anchor = U.hAnchor('combobox') || sa;
+      else if (e.src === 'blind' || e.src === 'scroll' || e.src === 'fever') anchor = U.hAnchor('mult') || sa;
+      if (e.type === 'chips') { setBox('chips', e.chips); M.fx.floatEl(anchor, `+${M.fmt(e.v)}`, 'chips'); M.audio.play('chips', i); }
+      else if (e.type === 'mult') { setBox('mult', e.mult); M.fx.floatEl(anchor, `+${M.fmt(e.v)} Mult`, 'mult'); M.audio.play('mult', i); }
+      else if (e.type === 'xmult') { setBox('mult', e.mult); M.fx.floatEl(anchor, `${e.text ? e.text + ' ' : ''}x${M.fmtX(e.v)}`, 'xmult'); M.audio.play('xmult'); M.fx.shake(4, 160); }
       else if (e.type === 'money') { G.addMoney(e.v); M.fx.floatEl(anchor, `+$${e.v}`, 'money'); M.audio.play('coin'); }
       else if (e.type === 'msg') { M.fx.floatEl(anchor, e.text, 'hl'); }
       await M.sleep(dl);
     }
-    // total
-    const pi = $('#hud-pair');
-    if (pi) { pi.insertAdjacentHTML('beforeend', `<span class="pi-total">${M.fmt(res.one)}${res.reps ? ` <em>x${res.reps + 1}</em>` : ''}</span>`); }
+    U.h('pair').forEach(pi => pi.insertAdjacentHTML('beforeend', `<span class="pi-total">= ${M.fmt(res.one)}${res.reps ? ` <em>x${res.reps + 1}</em>` : ''}</span>`));
     if (res.reps) { M.fx.announce(`DE NOVO! x${res.reps + 1}`, 'fire', 700); }
-    const big = res.total >= rs.target * 0.5;
+    const frac = res.total / rs.target;
+    const big = frac >= 0.5;
     M.audio.play('score', big);
     const [x1, y1] = M.fx.at(sa), [x2, y2] = M.fx.at(sb);
     const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
     M.fx.float(cx, cy - 20, M.fmt(res.total), 'total' + (big ? ' huge' : ''));
-    M.fx.shake(Math.min(16, 3 + Math.log10(Math.max(10, res.total)) * (big ? 3 : 1.4)), big ? 500 : 260);
-    if (big) { const sbx = $('#score-box'); sbx && sbx.classList.add('burn'); setTimeout(() => sbx && sbx.classList.remove('burn'), 2500); }
+    M.fx.shake(Math.min(18, 3 + Math.log10(Math.max(10, res.total)) * (big ? 3 : 1.4)), big ? 520 : 260);
+    if (big) {
+      U.h('scorebox').forEach(sbx => { sbx.classList.add('burn'); setTimeout(() => sbx.classList.remove('burn'), 2500); });
+      M.fx.announce(frac >= 1 ? 'ABSURDO!!' : 'ENORME!', 'fire', 700); M.vibrate([30, 40, 60]);
+      const ba = $('#board-area'); if (ba) { ba.classList.remove('punch'); void ba.offsetWidth; ba.classList.add('punch'); }
+      M.fx.burst(cx, cy, { n: 90, colors: ['#ffd166', '#ff9f1c', '#ff4d5e', '#fff'], speed: 900, size: 5 });
+    }
     // contagem do placar
-    const sc = $('#hud-score');
     const from = rs.score, to = rs.score + res.total;
     U._animScore = true;
-    const t0 = performance.now(), dur = fast ? 250 : 520;
+    const t0 = performance.now(), dur = fast ? 250 : 560;
+    let lastTick = 0;
     await new Promise(done => {
       const f = (now) => {
         const k = Math.min(1, (now - t0) / dur);
         const v = from + (to - from) * (1 - Math.pow(1 - k, 3));
-        if (sc) sc.textContent = M.fmt(v);
-        const p = $('#hud-prog'); if (p) p.style.width = Math.min(100, v / rs.target * 100) + '%';
+        U.h('score').forEach(sc => sc.textContent = M.fmt(v));
+        U.h('prog').forEach(p => p.style.width = Math.min(100, v / rs.target * 100) + '%');
+        if (now - lastTick > 55 && k < 1) { lastTick = now; M.audio.play('tick'); }
         if (k < 1) requestAnimationFrame(f); else done();
       };
       requestAnimationFrame(f);
     });
     U._animScore = false;
-    sc && (sc.classList.remove('pop'), void sc.offsetWidth, sc.classList.add('pop'));
-    await M.sleep(fast ? 60 : 160);
-    ch.textContent = '0'; mu.textContent = '0';
+    U.h('score').forEach(sc => { sc.classList.remove('pop'); void sc.offsetWidth; sc.classList.add('pop'); });
+    await M.sleep(fast ? 60 : 150);
+    U.h('chips').forEach(e => e.textContent = '0'); U.h('mult').forEach(e => e.textContent = '0');
+    $('.mcalc')?.classList.remove('on');
   };
 
   /* ============ recompensa ============ */
@@ -479,6 +530,7 @@
       M.audio.play('unlock'); U.renderShop(); U.renderRelics(); U.renderConsumables(); U.renderSide();
     };
     U.refreshShopAfford();
+    U.coach('shop', 'Bem-vindo à loja! <b>Relíquias</b> dão poderes permanentes. Toque/passe o mouse num item para ver o que ele faz.', 6000);
   };
   U.refreshShopAfford = () => {
     const run = M.run; if (!run.shop) return;
@@ -613,6 +665,7 @@
       <div class="opt"><span>🎴 Verso das cartas</span><button class="btn small" id="o-back">Escolher</button></div>
       <div class="opt-row"><button class="btn small" id="o-full">⛶ Tela cheia</button><button class="btn small" id="o-exp">⬇ Exportar save</button><button class="btn small" id="o-imp">⬆ Importar save</button></div>
       <div class="opt-row"><button class="btn small red" id="o-reset">Apagar todo o progresso</button></div>
+      <div class="credits"><b>Créditos</b><br>Músicas: "Cool Vibes", "Funkorama", "Hep Cats", "Volatile Reaction" e "Local Forecast - Elevator" — Kevin MacLeod (incompetech.com), licença Creative Commons: By Attribution 4.0<br>Efeitos sonoros: Kenney (kenney.nl), CC0</div>
       <div class="ver">MNEMO v${M.VERSION}</div></div>`);
     const save = () => { M.save.saveProfile(); M.applySettings(); };
     o.querySelector('#o-mus').oninput = (e) => { S.music = +e.target.value; save(); };
@@ -761,8 +814,7 @@
         M.audio.play('buy');
         U._lastDeck = d.id; U._lastStake = stake;
         G.newRun({ deck: d.id, stake });
-        if (!M.profile.tutorial) { M.profile.tutorial = true; M.save.saveProfile(); U.show('select'); U.showHelp(); }
-        else U.show('select');
+        M.profile.tutorial = true; M.save.saveProfile(); U.show('select');
       };
     };
     draw();

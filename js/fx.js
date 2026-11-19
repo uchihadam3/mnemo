@@ -98,7 +98,7 @@
     document.getElementById('floaters').appendChild(d);
     setTimeout(() => d.remove(), 1300);
   };
-  FX.floatEl = (el, text, cls = '') => { const [x, y] = FX.at(el); FX.float(x, y - 10, text, cls); };
+  FX.floatEl = (el, text, cls = '') => { const [x, y] = FX.at(el); FX.float(x + (Math.random() * 30 - 15), y - 10 - Math.random() * 18, text, cls); };
 
   /* anúncio grande no centro */
   FX.announce = (text, cls = '', dur = 1100) => {

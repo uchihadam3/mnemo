@@ -122,7 +122,7 @@
     const lines = [];
     const base = G.reward();
     lines.push({ t: isBoss ? 'Chefe derrotado' : (run.round === 0 ? 'Salão Pequeno' : 'Salão Grande'), v: base });
-    if (rs.tent > 0) lines.push({ t: `Tentativas restantes (${rs.tent})`, v: rs.tent });
+    if (rs.tent > 0) lines.push({ t: `Vidas restantes (${rs.tent} ❤)`, v: rs.tent });
     const cap = 5 + (G.hasV('tesouro') ? 5 : 0);
     const interest = Math.min(cap, Math.floor(Math.max(0, run.money) / 5));
     if (interest > 0) lines.push({ t: `Juros ($1 a cada $5, máx. $${cap})`, v: interest });
@@ -219,8 +219,10 @@
     const rng = G.rng();
     const x = rng.next();
     if (x < 0.62) { const r = G.rollRelic(G.rollRarity(rng, false), exclude); return { kind: 'relic', relic: r, cost: M.relicCost(r) }; }
-    if (x < 0.84) return { kind: 'scroll', id: G.rollScrollId(), cost: 3 };
-    return { kind: 'astro', id: G.rollAstroId(), cost: 3 };
+    let id, g = 0;
+    if (x < 0.84) { do id = G.rollScrollId(); while (exclude.includes(id) && g++ < 10); return { kind: 'scroll', id, cost: 3 }; }
+    do id = G.rollAstroId(); while (exclude.includes(id) && g++ < 10);
+    return { kind: 'astro', id, cost: 3 };
   };
   G.PACKS = {
     arcano: { n: 'Pacote Arcano', i: '📜', size: 3, pick: 1, c: 4, kind: 'scroll', col: '#b46bff', d: 'Escolha 1 de 3 Pergaminhos' },
@@ -249,7 +251,7 @@
     run.pending.mercadorAtivo = run.pending.mercador ? 1 : 0; run.pending.mercador = 0;
     const n = 2 + (G.hasV('abundancia') ? 1 : 0);
     const items = []; const ex = [];
-    for (let i = 0; i < n; i++) { const it = G.shopItem(ex); if (it.relic) ex.push(it.relic.id); items.push(it); }
+    for (let i = 0; i < n; i++) { const it = G.shopItem(ex); ex.push(it.relic ? it.relic.id : it.id); items.push(it); }
     if (run.pending.rara) { const r = G.rollRelic(3, ex); items.unshift({ kind: 'relic', relic: r, cost: 0, free: 1 }); run.pending.rara = 0; }
     const ptypes = Object.keys(G.PACKS);
     const packs = [0, 1].map(() => {
@@ -271,7 +273,7 @@
     G.addMoney(-c); run.shop.rerolls++;
     const n = 2 + (G.hasV('abundancia') ? 1 : 0); const ex = [];
     run.shop.items = [];
-    for (let i = 0; i < n; i++) { const it = G.shopItem(ex); if (it.relic) ex.push(it.relic.id); run.shop.items.push(it); }
+    for (let i = 0; i < n; i++) { const it = G.shopItem(ex); ex.push(it.relic ? it.relic.id : it.id); run.shop.items.push(it); }
     G.save();
     return true;
   };

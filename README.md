@@ -45,7 +45,8 @@ Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Astro) 
 - **10 Runas** permanentes, **8 Bênçãos** para quem pula salões
 - **10 Baralhos** iniciais e **5 Selos** de dificuldade
 - **23 Conquistas**, níveis de perfil, **8 versos de carta**, **Compêndio** e **Desafio Diário** com semente fixa
-- Música generativa que acelera com o seu combo, efeitos 100% sintetizados
+- Trilha sonora de verdade (jazz, funk e lounge) que muda por tela, e efeitos de cassino gravados
+- Modo **FEBRE**: combo 4+ dobra todos os pontos
 
 ## ⌨️ Atalhos
 
@@ -60,3 +61,9 @@ npm run dist:win   # gera o instalador do Windows em dist/
 ```
 
 Ao criar uma tag `v*` (ex.: `git tag v1.0.0 && git push --tags`), o GitHub Actions gera os instaladores de **Windows, Linux e macOS** e anexa ao Release. Todo push na `main` publica a versão web no **GitHub Pages**.
+
+## 🎵 Créditos
+
+- **Músicas:** "Cool Vibes", "Funkorama", "Hep Cats", "Volatile Reaction" e "Local Forecast - Elevator" — Kevin MacLeod ([incompetech.com](https://incompetech.com)), licença [Creative Commons: By Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Efeitos sonoros:** [Kenney](https://kenney.nl) — Casino Audio, Interface Sounds, UI Audio, Impact Sounds, Digital Audio e Music Jingles (CC0).
+- **Fontes:** Lilita One e Nunito (SIL Open Font License).

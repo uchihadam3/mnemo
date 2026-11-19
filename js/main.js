@@ -1,7 +1,7 @@
 /* MNEMO — inicialização e entrada */
 'use strict';
 (function () {
-  M.VERSION = '1.0.0';
+  M.VERSION = '1.1.0';
   const $ = M.$;
 
   M.applySettings = () => {
@@ -58,15 +58,20 @@
         return;
       }
       if (!t.closest('#pop')) M.ui.closePop();
-      if (t.closest('#btn-peek')) {
+      const pk = t.closest('[data-h="peekbtn"]');
+      if (pk) {
         const rs = M.run && M.run.rs;
-        if (rs && rs.visl > 0) { M.board.setPeek(!M.board.peekMode); M.audio.play('click'); }
-        else M.fx.floatEl($('#btn-peek'), rs && rs.boss === 'fantasma' ? 'Bloqueado!' : 'Sem Vislumbres', 'bad');
+        if (rs && rs.visl > 0 && rs.boss !== 'fantasma') { M.board.setPeek(!M.board.peekMode); M.audio.play('click'); }
+        else M.fx.floatEl(pk, rs && rs.boss === 'fantasma' ? 'Bloqueado!' : 'Sem Vislumbres', 'bad');
         return;
       }
-      if (t.closest('#btn-deck')) { M.audio.play('click'); M.ui.showDeck(); return; }
-      if (t.closest('#btn-runinfo')) { M.audio.play('click'); M.ui.showRunInfo(); return; }
-      if (t.closest('#btn-pause')) { M.audio.play('click'); M.ui.showPause(); return; }
+      const a2 = t.closest('[data-act2]');
+      if (a2) {
+        M.audio.play('click');
+        const k = a2.dataset.act2;
+        if (k === 'deck') M.ui.showDeck(); else if (k === 'info') M.ui.showRunInfo(); else if (k === 'pause') M.ui.showPause();
+        return;
+      }
       if (t.closest('.btn')) M.audio.play('click');
     });
     document.addEventListener('contextmenu', (e) => {
@@ -110,7 +115,7 @@
         return;
       }
       if (M.ui.current() === 'round' && M.run && M.run.rs) {
-        if (e.code === 'Space') { e.preventDefault(); $('#btn-peek')?.click(); }
+        if (e.code === 'Space') { e.preventDefault(); M.ui.hAnchor('peekbtn')?.click(); }
         const n = parseInt(e.key, 10);
         if (n >= 1 && n <= 5 && M.run.scrolls[n - 1]) M.board.useScroll(n - 1);
       }
