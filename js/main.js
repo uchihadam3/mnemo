@@ -1,7 +1,7 @@
 /* MNEMO — inicialização e entrada */
 'use strict';
 (function () {
-  M.VERSION = '1.1.1';
+  M.VERSION = '1.2.0';
   const $ = M.$;
 
   M.applySettings = () => {

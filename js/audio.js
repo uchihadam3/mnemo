@@ -4,11 +4,9 @@
   const A = M.audio = { sfxVol: 0.7, musVol: 0.45, started: false, fever: false };
   let ctx = null, master, sfxBus, musBus, musFilter;
   const buf = {};
-  const SFX = ['flip1', 'flip2', 'flip3', 'place1', 'place2', 'place3', 'shove', 'shuffle', 'fan', 'packopen', 'takeout',
-    'chip1', 'chip2', 'chip3', 'stack1', 'stack2', 'collide', 'handle', 'dice', 'click', 'select', 'error', 'glass', 'confirm',
-    'open', 'close', 'tick', 'pluck', 'bong', 'hover', 'shatter', 'bell', 'punch', 'metal', 'thud', 'powerup', 'phaserup',
-    'threetone', 'zapup', 'lowdown', 'j_SAX04', 'j_SAX10', 'j_SAX07', 'j_PIZZI02', 'j_PIZZI05', 'j_NES03', 'j_HIT09', 'j_STEEL04'];
-  const TRACKS = { menu: 'menu', round1: 'round1', round2: 'round2', boss: 'boss', shop: 'shop' };
+  // efeitos escolhidos pelo jogador na página de audição
+  const SFX = ['virar', 'par', 'erro', 'ficha', 'mult', 'dinheiro', 'vitoria', 'derrota', 'clique', 'vidro'];
+  const TRACKS = { menu: 'menu', round: 'round', boss: 'boss', shop: 'shop' };
 
   function init() {
     if (ctx) return;
@@ -48,47 +46,41 @@
     src.connect(g); g.connect(sfxBus);
     src.start(ctx.currentTime + t);
   }
-  const pick = (...a) => a[Math.floor(Math.random() * a.length)];
   const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
   const semi = (n) => Math.pow(2, n / 12);
 
   A.sfx = {
-    hover() { s('hover', { vol: 0.18, rate: 1.2 }); },
-    click() { s('click', { vol: 0.5 }); },
-    flip() { s(pick('flip1', 'flip2', 'flip3'), { vol: 0.9, rate: 1.05, jitter: 0.08 }); },
-    flipDown() { s(pick('place1', 'place2', 'place3'), { vol: 0.35, rate: 1.2 }); },
-    deal(i = 0) { if (i % 2 === 0) s(pick('place1', 'place2', 'place3'), { vol: 0.4, rate: 1 + (i % 12) * 0.02 }); },
-    match(combo = 1) {
-      const n = PENTA[Math.min(combo - 1, PENTA.length - 1)];
-      s('bell', { vol: 0.55, rate: 0.9 * semi(n), jitter: 0 });
-      s('chip' + (1 + (combo % 3)), { vol: 0.8, t: 0.02 });
-      if (combo >= 3) s('pluck', { vol: 0.5, rate: semi(n + 12) * 0.5, t: 0.08, jitter: 0 });
-    },
-    mismatch() { s('error', { vol: 0.55, rate: 0.9 }); s('thud', { vol: 0.7, rate: 0.8 }); },
-    chips(i = 0) { s(pick('chip1', 'chip2', 'chip3'), { vol: 0.75, rate: 1 + Math.min(i, 14) * 0.045 }); },
-    mult(i = 0) { s('tick', { vol: 0.8, rate: 0.8 + Math.min(i, 14) * 0.06, jitter: 0 }); s('chip2', { vol: 0.4, rate: 0.8 }); },
-    xmult() { s('metal', { vol: 0.55, rate: 1.1 }); s('zapup', { vol: 0.3, rate: 1.2 }); },
-    coin() { s('handle', { vol: 0.8, rate: 1.15 }); },
-    score(big = false) { s(big ? 'stack2' : 'stack1', { vol: 1 }); if (big) { s('punch', { vol: 0.8, rate: 0.8 }); s('bong', { vol: 0.45, rate: 0.8 }); } },
-    buy() { s('confirm', { vol: 0.5 }); s('collide', { vol: 0.8 }); },
-    sell() { s('handle', { vol: 0.9 }); s('chip1', { vol: 0.6, t: 0.06 }); },
-    reroll() { s('shuffle', { vol: 0.8, rate: 1.25 }); },
-    pack() { s('packopen', { vol: 1 }); s('j_NES03', { vol: 0.45, t: 0.18 }); },
-    take() { s('takeout', { vol: 0.9 }); },
-    use() { s('phaserup', { vol: 0.35 }); s('glass', { vol: 0.5, t: 0.05 }); },
-    peek() { s('glass', { vol: 0.6, rate: 1.1 }); },
-    shatter() { s('shatter', { vol: 0.9 }); },
-    clear() { s('fan', { vol: 0.9 }); s('j_PIZZI02', { vol: 0.7, t: 0.1 }); },
-    win() { s('j_SAX10', { vol: 0.85 }); s('stack2', { vol: 0.7, t: 0.15 }); },
-    lose() { s('j_PIZZI05', { vol: 0.8 }); s('lowdown', { vol: 0.35, t: 0.2 }); },
-    unlock() { s('j_SAX04', { vol: 0.8 }); s('threetone', { vol: 0.3, t: 0.1 }); },
-    tick() { s('tick', { vol: 0.5 }); },
-    boss() { s('j_HIT09', { vol: 0.8 }); s('metal', { vol: 0.6, rate: 0.55 }); },
-    swap() { s('shove', { vol: 0.8 }); },
-    shuffle() { s('shuffle', { vol: 0.9 }); },
-    fever() { s('powerup', { vol: 0.5 }); s('j_STEEL04', { vol: 0.6, t: 0.05 }); },
-    feverEnd() { s('lowdown', { vol: 0.4 }); },
-    dice() { s('dice', { vol: 0.8 }); },
+    hover() { },
+    click() { s('clique', { vol: 0.7 }); },
+    flip() { s('virar', { vol: 0.9, jitter: 0.06 }); },
+    flipDown() { s('virar', { vol: 0.3, rate: 0.85 }); },
+    deal(i = 0) { if (i % 2 === 0) s('virar', { vol: 0.35, rate: 1 + (i % 12) * 0.025 }); },
+    match(combo = 1) { s('par', { vol: 0.8, rate: semi(PENTA[Math.min(combo - 1, PENTA.length - 1)]), jitter: 0 }); },
+    mismatch() { s('erro', { vol: 0.75 }); },
+    chips(i = 0) { s('ficha', { vol: 0.8, rate: 1 + Math.min(i, 14) * 0.045 }); },
+    mult(i = 0) { s('mult', { vol: 0.7, rate: 1 + Math.min(i, 14) * 0.04 }); },
+    xmult() { s('mult', { vol: 1, rate: 0.8 }); },
+    coin() { s('dinheiro', { vol: 0.75 }); },
+    score(big = false) { s('mult', { vol: big ? 1 : 0.6, rate: big ? 0.7 : 0.9 }); if (big) s('par', { vol: 0.6, rate: 2, t: 0.06, jitter: 0 }); },
+    buy() { s('dinheiro', { vol: 0.85 }); },
+    sell() { s('dinheiro', { vol: 0.85, rate: 0.85 }); },
+    reroll() { [0, 0.06, 0.12].forEach((t, i) => s('virar', { vol: 0.6, rate: 1.1 + i * 0.1, t })); },
+    pack() { [0, 0.07, 0.14].forEach((t, i) => s('virar', { vol: 0.7, rate: 0.9 + i * 0.12, t })); s('par', { vol: 0.6, rate: 1.5, t: 0.22, jitter: 0 }); },
+    take() { s('virar', { vol: 0.8, rate: 1.1 }); },
+    use() { s('par', { vol: 0.6, rate: 1.5, jitter: 0 }); },
+    peek() { s('virar', { vol: 0.7, rate: 1.3 }); },
+    shatter() { s('vidro', { vol: 0.9 }); },
+    clear() { s('vitoria', { vol: 0.8 }); },
+    win() { s('vitoria', { vol: 0.95 }); },
+    lose() { s('derrota', { vol: 0.9 }); },
+    unlock() { s('vitoria', { vol: 0.85, rate: 1.12 }); },
+    tick() { s('ficha', { vol: 0.25, rate: 1.6 }); },
+    boss() { s('derrota', { vol: 0.8, rate: 0.75 }); },
+    swap() { s('virar', { vol: 0.8, rate: 0.9 }); },
+    shuffle() { [0, 0.05, 0.1, 0.15].forEach(t => s('virar', { vol: 0.5, t })); },
+    fever() { [0, 4, 7, 12].forEach((n, i) => s('par', { vol: 0.7, rate: semi(n), t: i * 0.07, jitter: 0 })); },
+    feverEnd() { s('erro', { vol: 0.35, rate: 1.2 }); },
+    dice() { },
   };
   A.play = (name, ...a) => { try { if (A.sfx[name]) A.sfx[name](...a); } catch (e) { } };
 

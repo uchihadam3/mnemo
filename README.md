@@ -45,7 +45,7 @@ Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Astro) 
 - **10 Runas** permanentes, **8 Bênçãos** para quem pula salões
 - **10 Baralhos** iniciais e **5 Selos** de dificuldade
 - **23 Conquistas**, níveis de perfil, **8 versos de carta**, **Compêndio** e **Desafio Diário** com semente fixa
-- Trilha sonora de verdade (jazz, funk e lounge) que muda por tela, e efeitos de cassino gravados
+- Trilha synthwave/hipnótica que muda por tela e efeitos sonoros escolhidos a dedo
 - Modo **FEBRE**: combo 4+ dobra todos os pontos
 
 ## ⌨️ Atalhos
@@ -64,6 +64,10 @@ Ao criar uma tag `v*` (ex.: `git tag v1.0.0 && git push --tags`), o GitHub Actio
 
 ## 🎵 Créditos
 
-- **Músicas:** "Cool Vibes", "Funkorama", "Hep Cats", "Volatile Reaction" e "Local Forecast - Elevator" — Kevin MacLeod ([incompetech.com](https://incompetech.com)), licença [Creative Commons: By Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
-- **Efeitos sonoros:** [Kenney](https://kenney.nl) — Casino Audio, Interface Sounds, UI Audio, Impact Sounds, Digital Audio e Music Jingles (CC0).
+- **Músicas** (escolhidas na [página de audição](https://uchihadam3.github.io/mnemo/audicao/)):
+  - Menu: "Chillwave Nightdrive" — [Bogart VGM](https://opengameart.org/content/chillwave-nightdrive), CC BY 3.0
+  - Jogo: "Electro" — [Pro Sensory](https://opengameart.org/content/electro), CC0
+  - Chefe: "Deep Haze" — Kevin MacLeod ([incompetech.com](https://incompetech.com)), CC BY 4.0
+  - Loja: "Look Trippy" — [Pro Sensory](https://opengameart.org/content/look-trippy), CC0
+- **Efeitos sonoros:** [Kenney](https://kenney.nl) e [Juhani Junkala](https://opengameart.org/content/512-sound-effects-8-bit-style) (CC0).
 - **Fontes:** Lilita One e Nunito (SIL Open Font License).

@@ -100,7 +100,7 @@
       if (!$('#side')) U.renderRunLayout();
       M.bg.set(name === 'shop' ? 'shop' : (run.round === 2 && name !== 'cashout' ? 'boss' : 'run'));
       if (name === 'shop') M.audio.music('shop');
-      else if (name === 'round' || name === 'select') M.audio.music(run.round === 2 ? 'boss' : (run.ante % 2 ? 'round1' : 'round2'));
+      else if (name === 'round' || name === 'select') M.audio.music(run.round === 2 ? 'boss' : 'round');
       M.audio.mood(name === 'round' ? 'round' : 'normal');
       $('#stage').dataset.screen = name;
       U.renderSide(); U.renderRelics(); U.renderConsumables();
@@ -665,7 +665,7 @@
       <div class="opt"><span>🎴 Verso das cartas</span><button class="btn small" id="o-back">Escolher</button></div>
       <div class="opt-row"><button class="btn small" id="o-full">⛶ Tela cheia</button><button class="btn small" id="o-exp">⬇ Exportar save</button><button class="btn small" id="o-imp">⬆ Importar save</button></div>
       <div class="opt-row"><button class="btn small red" id="o-reset">Apagar todo o progresso</button></div>
-      <div class="credits"><b>Créditos</b><br>Músicas: "Cool Vibes", "Funkorama", "Hep Cats", "Volatile Reaction" e "Local Forecast - Elevator" — Kevin MacLeod (incompetech.com), licença Creative Commons: By Attribution 4.0<br>Efeitos sonoros: Kenney (kenney.nl), CC0</div>
+      <div class="credits"><b>Créditos</b><br>Músicas: "Chillwave Nightdrive" — Bogart VGM (CC BY 3.0) · "Electro" e "Look Trippy" — Pro Sensory (CC0) · "Deep Haze" — Kevin MacLeod, incompetech.com (CC BY 4.0)<br>Efeitos sonoros: Kenney (kenney.nl) e Juhani Junkala (CC0)</div>
       <div class="ver">MNEMO v${M.VERSION}</div></div>`);
     const save = () => { M.save.saveProfile(); M.applySettings(); };
     o.querySelector('#o-mus').oninput = (e) => { S.music = +e.target.value; save(); };
