@@ -47,7 +47,7 @@
         }
       ],
       "icon": "assets/icon.png",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true
     },
     "portable": {
       "artifactName": "MNEMO-${version}-portatil.${ext}"
