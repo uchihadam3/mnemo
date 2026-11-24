@@ -114,7 +114,7 @@
       if (name !== 'gameover') M.audio.music('menu');
       else M.audio.music(null);
       M.audio.mood('normal');
-      ({ menu: U.renderMenu, newrun: U.renderNewRun, gameover: U.renderGameOver, victory: U.renderVictory, collection: U.renderCollection, achievements: U.renderAch, stats: U.renderStats })[name]();
+      ({ menu: U.renderMenu, newrun: U.renderNewRun, gameover: U.renderGameOver, victory: U.renderVictory, collection: U.renderCollection, achievements: U.renderAch, stats: U.renderStats, rewards: U.renderRewards })[name]();
     }
   };
   U.current = () => screen;
@@ -615,7 +615,7 @@
     U.overlay(`<div class="run-info"><div class="panel-title">Níveis dos naipes</div><div class="lv-list">${rows}</div>
       <div class="ri-help">Cada par pontua: <b class="chips">Fichas do naipe + Fichas das 2 cartas</b> × <b class="mult">Mult do naipe + Combo</b>. Astros sobem o nível dos naipes.</div>
       <div class="panel-title small">Runas gravadas</div><div class="vchips">${vs}</div>
-      <div class="panel-title small">Por salão</div><div class="ri-res"><span class="tent">${res.tent} Tentativas</span><span class="visl">${res.visl} Vislumbres</span><span class="hl">${M.fmtX(res.prev)}s de pré-visualização</span></div>
+      <div class="panel-title small">Por salão</div><div class="ri-res"><span class="tent">${res.tent} Vidas</span><span class="visl">${res.visl} Vislumbres</span><span class="hl">${M.fmtX(res.prev)}s de pré-visualização</span></div>
       <div class="ri-seed">${M.DECK[run.deck].n} · ${M.STAKES[run.stake - 1].n}${run.daily ? ' · Desafio Diário' : ''}</div></div>`);
   };
 
@@ -638,15 +638,15 @@
   U.showHelp = () => {
     U.overlay(`<div class="help"><div class="panel-title">Como jogar</div>
       <div class="help-grid">
-      <div><b class="hl">🃏 O básico</b><p>Vire duas cartas. Se forem iguais, é um <b>par</b> e você pontua. Se não, você perde uma <b class="tent">Tentativa</b>. Fique sem Tentativas e a jornada acaba.</p></div>
+      <div><b class="hl">🃏 O básico</b><p>Vire duas cartas. Se forem iguais, é um <b>par</b> e você pontua. Se não, você perde uma <b class="tent">Vida</b>. Fique sem Vidas e a jornada acaba.</p></div>
       <div><b class="hl">🎯 O objetivo</b><p>Alcance a <b>pontuação mínima</b> de cada salão. São 3 salões por Círculo e 8 Círculos. O terceiro salão é sempre um <b>Chefe</b> com regras malvadas.</p></div>
       <div><b class="hl">✖ Pontuação</b><p>Cada par vale <b class="chips">Fichas</b> × <b class="mult">Mult</b>. Pares seguidos sem errar aumentam o <b>Combo</b>, que soma Mult. Errar zera o Combo.</p></div>
       <div><b class="hl">🧠 Lembrança x Sorte</b><p>Se a segunda carta já tinha sido vista, é <b>Lembrança</b>. Se nenhuma das duas tinha sido vista, é <b>Sorte Cega</b> (x2 Mult!).</p></div>
-      <div><b class="hl">👁 Vislumbres</b><p>Espiam uma carta sem gastar Tentativa. Botão direito numa carta, ou clique no contador.</p></div>
-      <div><b class="hl">🧹 Tabuleiro limpo</b><p>Limpar todas as cartas dá <b class="tent">+2 Tentativas</b> e um novo tabuleiro aparece.</p></div>
+      <div><b class="hl">👁 Vislumbres</b><p>Espiam uma carta sem gastar Vida. Botão direito numa carta, ou clique no contador.</p></div>
+      <div><b class="hl">🧹 Tabuleiro limpo</b><p>Limpar todas as cartas dá <b class="tent">+2 Vidas</b> e um novo tabuleiro aparece.</p></div>
       <div><b class="hl">🏺 Relíquias</b><p>Compre na loja. Dão efeitos passivos poderosos. Combine-as para builds absurdas!</p></div>
       <div><b class="hl">📜 Pergaminhos & 🪐 Astros</b><p>Pergaminhos são de uso único. Astros sobem o nível de um naipe para sempre.</p></div>
-      <div><b class="hl">💰 Dinheiro</b><p>Ganhe por vitória, por Tentativas restantes e juros ($1 a cada $5 guardados).</p></div>
+      <div><b class="hl">💰 Dinheiro</b><p>Ganhe por vitória, por Vidas restantes e juros ($1 a cada $5 guardados).</p></div>
       <div><b class="hl">⌨ Atalhos</b><p><b>Espaço</b>: Vislumbre · <b>1-5</b>: usar pergaminho · <b>Esc</b>: menu</p></div>
       </div></div>`);
   };

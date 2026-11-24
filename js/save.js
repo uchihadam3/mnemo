@@ -16,6 +16,7 @@
     settings: { sfx: 0.7, music: 0.45, speed: 1, shake: true, crt: true, back: 'mandala', fastHide: false, reduceMotion: false },
     created: Date.now(),
     tutorial: false,
+    fresh: [],
   });
 
   function merge(def, obj) {
@@ -69,6 +70,11 @@
   S.grant = (u) => {
     const out = [];
     const P = M.profile.unlocked;
+    const F = M.profile.fresh = M.profile.fresh || [];
+    const mark = (k, id) => { if (!F.includes(k + ':' + id)) F.push(k + ':' + id); };
+    if (u.relic && !P.relics.includes(u.relic)) mark('relic', u.relic);
+    if (u.deck && !P.decks.includes(u.deck)) mark('deck', u.deck);
+    if (u.back && !P.backs.includes(u.back)) mark('back', u.back);
     if (u.relic && !P.relics.includes(u.relic)) { P.relics.push(u.relic); out.push({ kind: 'Relíquia', name: M.RELIC[u.relic].n, icon: M.RELIC[u.relic].i }); }
     if (u.deck && !P.decks.includes(u.deck)) { P.decks.push(u.deck); out.push({ kind: 'Baralho', name: M.DECK[u.deck].n, icon: '🂠' }); }
     if (u.back && !P.backs.includes(u.back)) { P.backs.push(u.back); const b = M.BACKS.find(b => b.id === u.back); out.push({ kind: 'Verso de carta', name: b.n, icon: '🎴' }); }

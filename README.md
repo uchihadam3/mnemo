@@ -27,11 +27,11 @@ Em *Opções* dá para **exportar/importar o save** (backup ou levar para outro 
 
 ## 🎮 Regras
 
-- Vire **duas cartas**. Iguais = **par** (pontua). Diferentes = perde **1 Tentativa**.
+- Vire **duas cartas**. Iguais = **par** (pontua). Diferentes = perde **1 Vida**.
 - Cada par vale **Fichas × Mult**. Pares seguidos aumentam o **Combo** (+Mult). Errar zera o combo.
 - **Lembrança**: a 2ª carta já tinha sido vista. **Sorte Cega**: nenhuma das duas tinha sido vista → **x2 Mult**.
 - **Vislumbres** espiam uma carta sem custo (botão direito ou tecla Espaço).
-- **Tabuleiro limpo** = +2 Tentativas e um novo tabuleiro.
+- **Tabuleiro limpo** = +2 Vidas e um novo tabuleiro.
 - 3 salões por Círculo: **Pequeno**, **Grande** e **Chefe**. Vença o 8º Círculo — ou continue no **modo sem fim**.
 
 Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Astro) **não** forma par!

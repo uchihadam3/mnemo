@@ -1,7 +1,7 @@
 /* MNEMO — inicialização e entrada */
 'use strict';
 (function () {
-  M.VERSION = '1.2.0';
+  M.VERSION = '1.3.0';
   const $ = M.$;
 
   M.applySettings = () => {
@@ -58,6 +58,11 @@
         return;
       }
       if (!t.closest('#pop')) M.ui.closePop();
+      const tipEl = t.closest('[data-tip]');
+      if (tipEl && tipEl.tagName !== 'BUTTON' && M._lastPointer === 'touch' && !t.closest('button')) {
+        const html = M.ui.tipFor(tipEl);
+        if (html) { M.ui.showTip(tipEl, html); clearTimeout(M._tipT); M._tipT = setTimeout(M.ui.hideTip, 3500); return; }
+      }
       const pk = t.closest('[data-h="peekbtn"]');
       if (pk) {
         const rs = M.run && M.run.rs;
@@ -81,6 +86,7 @@
 
     // tooltips (desktop)
     let tipEl = null;
+    document.addEventListener('pointerdown', (e) => { M._lastPointer = e.pointerType; }, { capture: true, passive: true });
     document.addEventListener('pointerover', (e) => {
       if (e.pointerType === 'touch') return;
       const el = e.target.closest('[data-tip]');

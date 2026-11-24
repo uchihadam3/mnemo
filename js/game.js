@@ -302,7 +302,7 @@
   };
   G.addItem = (it) => {
     const run = M.run;
-    if (it.kind === 'relic') { run.relics.push(it.relic); M.save.seen('relics', it.relic.id); if (run.relics.length >= 5) M.save.achieve('colecao'); }
+    if (it.kind === 'relic') { run.relics.push(it.relic); M.save.seen('relics', it.relic.id); const st = M.profile.stats; st.maxRelics = Math.max(st.maxRelics || 0, run.relics.length); if (run.relics.length >= 5) M.save.achieve('colecao'); }
     else if (it.kind === 'scroll') { run.scrolls.push({ id: it.id }); M.save.seen('scrolls', it.id); }
     else if (it.kind === 'astro') G.useAstro(it.id);
     else if (it.kind === 'card') run.cards.push(it.card);

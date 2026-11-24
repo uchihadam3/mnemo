@@ -55,7 +55,7 @@
     // ---- Comuns
     { id: 'elefante', n: 'Memória de Elefante', i: '🐘', r: 1, c: 4, d: '<b class="hl">+1s</b> de pré-visualização em cada tabuleiro', mod: { preview: 1 } },
     { id: 'coruja', n: 'Coruja Noturna', i: '🦉', r: 1, c: 4, d: '<b class="visl">+1 Vislumbre</b> por salão', mod: { visl: 1 } },
-    { id: 'trevo', n: 'Trevo de Quatro Folhas', i: '🍀', r: 1, c: 5, d: '<b class="tent">+1 Tentativa</b> por salão', mod: { tent: 1 } },
+    { id: 'trevo', n: 'Trevo de Quatro Folhas', i: '🍀', r: 1, c: 5, d: '<b class="tent">+1 Vida</b> por salão', mod: { tent: 1 } },
     suitRelic('brasa', 'Brasa Viva', '🔥', 'chama'),
     suitRelic('concha', 'Concha do Mar', '🐚', 'mare'),
     suitRelic('raiz', 'Raiz Antiga', '🌿', 'folha'),
@@ -66,7 +66,7 @@
       match(x) { if (x.kind === 'memory') x.addMult(4); } },
     { id: 'gato', n: 'Gato da Sorte', i: '🐈', r: 1, c: 5, d: 'Pares de <b class="hl">Sorte</b> dão <b class="chips">+50 Fichas</b>',
       match(x) { if (x.kind !== 'memory') x.addChips(50); } },
-    { id: 'tartaruga', n: 'Tartaruga Sábia', i: '🐢', r: 1, c: 5, d: '<b class="mult">+1 Mult</b> por Tentativa restante',
+    { id: 'tartaruga', n: 'Tartaruga Sábia', i: '🐢', r: 1, c: 5, d: '<b class="mult">+1 Mult</b> por Vida restante',
       match(x) { if (x.rs.tent > 0) x.addMult(x.rs.tent); } },
     { id: 'relampago', n: 'Relâmpago', i: '⚡', r: 1, c: 5, d: 'Pares feitos em até <b class="hl">4s</b> após o anterior dão <b class="mult">+6 Mult</b>',
       match(x) { if (x.rs.lastMatchT && (x.now - x.rs.lastMatchT) < 4000) x.addMult(6); } },
@@ -88,11 +88,11 @@
 
     // ---- Incomuns
     { id: 'corrente', n: 'Corrente Elétrica', i: '🔗', r: 2, c: 7, lock: 1, d: 'Cada nível de <b class="hl">Combo</b> dá <b class="mult">+2 Mult</b> em vez de +1', flag: 'combo2' },
-    { id: 'egide', n: 'Égide', i: '🛡️', r: 2, c: 7, d: 'O primeiro erro de cada salão não custa Tentativa nem quebra o Combo',
+    { id: 'egide', n: 'Égide', i: '🛡️', r: 2, c: 7, d: 'O primeiro erro de cada salão não custa Vida nem quebra o Combo',
       mismatch(x, r) { if (!x.rs.flags.egide) { x.rs.flags.egide = 1; x.protect('Égide!'); } } },
-    { id: 'areia', n: 'Areia Viva', i: '⏳', r: 2, c: 6, d: 'Limpar o tabuleiro dá <b class="tent">+2 Tentativas</b> extras',
+    { id: 'areia', n: 'Areia Viva', i: '⏳', r: 2, c: 6, d: 'Limpar o tabuleiro dá <b class="tent">+2 Vidas</b> extras',
       boardClear(x) { x.addTent(2); } },
-    { id: 'teimoso', n: 'Coração Teimoso', i: '❤️‍🩹', r: 2, c: 6, d: '<b class="hl">1 em 3</b> de chance de um erro não custar Tentativa',
+    { id: 'teimoso', n: 'Coração Teimoso', i: '❤️‍🩹', r: 2, c: 6, d: '<b class="hl">1 em 3</b> de chance de um erro não custar Vida',
       mismatch(x) { if (x.chance(1 / 3)) x.saveTent('Teimoso!'); } },
     { id: 'bateria', n: 'Bateria Arcana', i: '🔋', r: 2, c: 7, d: 'Ganha <b class="mult">+2 Mult</b> permanente a cada tabuleiro limpo',
       desc: (r) => `Ganha <b class="mult">+2 Mult</b> a cada tabuleiro limpo <i>(atual: +${r.data.v || 0})</i>`,
@@ -129,16 +129,16 @@
     { id: 'olho', n: 'Olho que Tudo Vê', i: '👁️', r: 3, c: 9, lock: 1, d: 'No início de cada tabuleiro, <b class="hl">um par</b> aleatório é marcado com brilho',
       boardStart(x) { x.markPair(); } },
     { id: 'bussola', n: 'Bússola do Destino', i: '🧭', r: 3, c: 9, lock: 1, d: '<b class="hl">1 em 3</b>: ao virar a primeira carta, seu par pisca brevemente', flag: 'bussola' },
-    { id: 'memento', n: 'Memento Mori', i: '💀', r: 3, c: 8, d: '<b class="xmult">+x0,5 Mult</b> por Tentativa perdida neste salão',
+    { id: 'memento', n: 'Memento Mori', i: '💀', r: 3, c: 8, d: '<b class="xmult">+x0,5 Mult</b> por Vida perdida neste salão',
       match(x) { if (x.rs.lost > 0) x.xMult(1 + 0.5 * x.rs.lost); } },
     { id: 'midas', n: 'Rei Midas', i: '👑', r: 3, c: 9, lock: 1, d: 'Cartas <b class="money">Douradas</b> dão <b class="xmult">x2 Mult</b>',
       match(x) { if (x.pair.enh === 'gold') x.xMult(2); } },
-    { id: 'pavio', n: 'Pavio Curto', i: '💣', r: 3, c: 8, d: '<b class="xmult">x2,5 Mult</b> em todos os pares, mas <b class="tent">-2 Tentativas</b>', mod: { tent: -2 },
+    { id: 'pavio', n: 'Pavio Curto', i: '💣', r: 3, c: 8, d: '<b class="xmult">x2,5 Mult</b> em todos os pares, mas <b class="tent">-2 Vidas</b>', mod: { tent: -2 },
       match(x) { x.xMult(2.5); } },
     { id: 'vampiro', n: 'Vampiro', i: '🦇', r: 3, c: 9, lock: 1, d: 'Consome encantamentos das cartas pareadas e ganha <b class="xmult">x0,25 Mult</b> por cada',
       desc: (r) => `Consome encantamentos pareados, ganha <b class="xmult">x0,25</b> cada <i>(atual: x${M.fmtX(1 + (r.data.v || 0))})</i>`,
       match(x, r) { if (x.pair.enh && x.pair.enh !== 'stone') { r.data.v = (r.data.v || 0) + 0.25; x.stripEnh(); x.msg('Slurp!'); } if (r.data.v) x.xMult(1 + r.data.v); } },
-    { id: 'fenix', n: 'Pena de Fênix', i: '🪶', r: 3, c: 8, lock: 1, d: 'Ao ficar sem Tentativas, renasce com <b class="tent">4 Tentativas</b> e se destrói', flag: 'fenix' },
+    { id: 'fenix', n: 'Pena de Fênix', i: '🪶', r: 3, c: 8, lock: 1, d: 'Ao ficar sem Vidas, renasce com <b class="tent">4 Vidas</b> e se destrói', flag: 'fenix' },
     { id: 'lira', n: 'Lira de Mnemósine', i: '🎼', r: 3, c: 10, lock: 1, d: 'Pares de <b class="hl">Lembrança</b> dão <b class="xmult">x1,5 Mult</b>',
       match(x) { if (x.kind === 'memory') x.xMult(1.5); } },
     { id: 'solnegro', n: 'Sol Negro', i: '🌑', r: 3, c: 10, lock: 1, d: '<b class="xmult">+x0,5 Mult</b> por naipe diferente pareado neste tabuleiro',
@@ -165,10 +165,10 @@
     { id: 'revelar', n: 'Revelação', i: '📜', when: 'round', d: 'Revela <b class="hl">4 cartas</b> aleatórias por instantes' },
     { id: 'clarividencia', n: 'Clarividência', i: '🔆', when: 'round', d: 'Marca <b class="hl">um par</b> inteiro com brilho' },
     { id: 'raiox', n: 'Raio-X', i: '🩻', when: 'round', d: 'Revela <b class="hl">todo o tabuleiro</b> por 1 segundo' },
-    { id: 'elixir', n: 'Elixir', i: '🧪', when: 'round', d: '<b class="tent">+2 Tentativas</b> neste salão' },
+    { id: 'elixir', n: 'Elixir', i: '🧪', when: 'round', d: '<b class="tent">+2 Vidas</b> neste salão' },
     { id: 'olhar', n: 'Terceiro Olho', i: '🧿', when: 'round', d: '<b class="visl">+2 Vislumbres</b> neste salão' },
     { id: 'foco', n: 'Foco', i: '🎯', when: 'round', next: 1, d: 'O próximo par recebe <b class="xmult">x3 Mult</b>' },
-    { id: 'ambar', n: 'Âmbar', i: '🟠', when: 'round', d: 'O próximo erro não custa Tentativa nem quebra o Combo' },
+    { id: 'ambar', n: 'Âmbar', i: '🟠', when: 'round', d: 'O próximo erro não custa Vida nem quebra o Combo' },
     { id: 'midas', n: 'Toque de Midas', i: '🪙', when: 'round', next: 1, d: 'O próximo par vira <b class="money">Dourado</b> para sempre' },
     { id: 'vidro', n: 'Alquimia de Vidro', i: '🥃', when: 'round', next: 1, d: 'O próximo par vira <b class="hl">Vidro</b> para sempre' },
     { id: 'fichas', n: 'Runa de Fichas', i: '🔷', when: 'round', next: 1, d: 'O próximo par vira <b class="chips">Bônus</b> para sempre' },
@@ -203,13 +203,13 @@
     { id: 'nevoa', n: 'A Névoa', i: '🌫️', c: '#8fa3b8', d: 'Sem pré-visualização', min: 1 },
     { id: 'embaralhador', n: 'O Embaralhador', i: '🌀', c: '#ff9f1c', d: 'A cada erro, duas cartas ocultas trocam de lugar', min: 1 },
     { id: 'cinzento', n: 'O Cinzento', i: '🩶', c: '#9a9a9a', d: 'As cartas perdem as cores e os símbolos de naipe', min: 2 },
-    { id: 'rachada', n: 'A Ampulheta Rachada', i: '⌛', c: '#e0b15c', d: '<b class="tent">-3 Tentativas</b>', min: 1 },
+    { id: 'rachada', n: 'A Ampulheta Rachada', i: '⌛', c: '#e0b15c', d: '<b class="tent">-3 Vidas</b>', min: 1 },
     { id: 'ladrao', n: 'O Ladrão', i: '🦝', c: '#c9a227', d: 'Perde <b class="money">$1</b> a cada erro', min: 1 },
     { id: 'eclipse', n: 'O Eclipse', i: '🌘', c: '#6c4ab6', d: 'Cartas de um naipe não pontuam', min: 2, setup(rs, rng) { rs.flags.eclipse = rng.pick(M.SUIT_KEYS); } },
     { id: 'labirinto', n: 'O Labirinto', i: '🧱', c: '#7a5c3e', d: 'Tabuleiro com <b class="hl">+3 pares</b>', min: 2 },
-    { id: 'mimico', n: 'O Mímico', i: '🎁', c: '#b5179e', d: '2 Mímicos sem par se escondem. Virar um custa <b class="tent">1 Tentativa</b>', min: 2 },
+    { id: 'mimico', n: 'O Mímico', i: '🎁', c: '#b5179e', d: '2 Mímicos sem par se escondem. Virar um custa <b class="tent">1 Vida</b>', min: 2 },
     { id: 'fantasma', n: 'O Fantasma', i: '👻', c: '#c8d6e5', d: 'Cartas erradas somem rápido e Vislumbres ficam bloqueados', min: 3 },
-    { id: 'relogio', n: 'O Relógio', i: '⏰', c: '#e63946', d: '<b class="hl">8 segundos</b> por jogada, ou perde uma Tentativa', min: 3 },
+    { id: 'relogio', n: 'O Relógio', i: '⏰', c: '#e63946', d: '<b class="hl">8 segundos</b> por jogada, ou perde uma Vida', min: 3 },
     { id: 'muralha', n: 'A Muralha', i: '🏰', c: '#5c677d', d: 'Alvo muito maior <i>(x3)</i>', min: 3 },
     { id: 'espelho', n: 'O Espelho', i: '🪩', c: '#48cae4', d: 'O tabuleiro se espelha a cada 3 erros', min: 3 },
     { id: 'vazio', n: 'O Vazio', i: '🕳️', c: '#3a0ca3', d: 'O Combo não dá Mult', min: 4 },
@@ -217,7 +217,7 @@
   M.FINAL_BOSSES = [
     { id: 'lete', n: 'Lete, o Rio do Esquecimento', i: '🌊', c: '#00b4d8', d: 'A cada 4 erros, todas as cartas ocultas são embaralhadas', final: 1 },
     { id: 'sombra', n: 'Mnemósine Sombria', i: '🌒', c: '#9d4edd', d: 'Sem pré-visualização e sem cores', final: 1 },
-    { id: 'abismo', n: 'O Devorador', i: '🦑', c: '#d00000', d: '<b class="tent">-3 Tentativas</b> e o tabuleiro tem +2 pares', final: 1 },
+    { id: 'abismo', n: 'O Devorador', i: '🦑', c: '#d00000', d: '<b class="tent">-3 Vidas</b> e o tabuleiro tem +2 pares', final: 1 },
   ];
   M.BOSS = Object.fromEntries([...M.BOSSES, ...M.FINAL_BOSSES].map(b => [b.id, b]));
 
@@ -229,7 +229,7 @@
     { id: 'celeste', n: 'Bênção Celeste', i: '🌌', d: 'Abra um <b class="hl">Pacote Celeste</b> grátis agora' },
     { id: 'juros', n: 'Bênção dos Juros', i: '🏦', d: 'Dobra seu dinheiro <i>(máx. +$15)</i>' },
     { id: 'mercador', n: 'Bênção do Mercador', i: '🏷️', d: 'Tudo na próxima loja custa <b class="hl">metade</b>' },
-    { id: 'persist', n: 'Bênção da Persistência', i: '🔁', d: '<b class="tent">+3 Tentativas</b> no próximo salão' },
+    { id: 'persist', n: 'Bênção da Persistência', i: '🔁', d: '<b class="tent">+3 Vidas</b> no próximo salão' },
     { id: 'reliquia', n: 'Bênção da Relíquia', i: '🏺', d: 'Abra um <b class="hl">Pacote de Relíquias</b> grátis agora' },
   ];
   M.TAG = Object.fromEntries(M.TAGS.map(t => [t.id, t]));
@@ -237,7 +237,7 @@
   /* ======================= RUNAS (vouchers) ======================= */
   M.VOUCHERS = [
     { id: 'expansao', n: 'Runa da Expansão', i: 'ᚠ', d: '<b class="hl">+1 espaço</b> de Relíquia' },
-    { id: 'persistencia', n: 'Runa da Persistência', i: 'ᚢ', d: '<b class="tent">+1 Tentativa</b> por salão' },
+    { id: 'persistencia', n: 'Runa da Persistência', i: 'ᚢ', d: '<b class="tent">+1 Vida</b> por salão' },
     { id: 'olhar', n: 'Runa do Olhar', i: 'ᚦ', d: '<b class="visl">+1 Vislumbre</b> por salão' },
     { id: 'lembranca', n: 'Runa da Lembrança', i: 'ᚨ', d: '<b class="hl">+0,75s</b> de pré-visualização' },
     { id: 'tesouro', n: 'Runa do Tesouro', i: 'ᚱ', d: 'Juros máximos <b class="money">+$5</b>' },
@@ -253,13 +253,13 @@
   const std = () => { const d = []; for (const s of M.SUIT_KEYS) for (let r = 1; r <= 5; r++) d.push({ suit: s, rank: r }); return d; };
   M.DECKS = [
     { id: 'classico', n: 'Baralho Clássico', c: '#7b5cff', d: '20 cartas, 4 naipes. O começo de toda lenda.', cards: std },
-    { id: 'safira', n: 'Baralho Safira', c: '#2f80ed', d: '<b class="tent">+1 Tentativa</b> por salão', cards: std, tent: 1, lock: 'Derrote um Chefe' },
+    { id: 'safira', n: 'Baralho Safira', c: '#2f80ed', d: '<b class="tent">+1 Vida</b> por salão', cards: std, tent: 1, lock: 'Derrote um Chefe' },
     { id: 'rubi', n: 'Baralho Rubi', c: '#e0245e', d: '<b class="visl">+1 Vislumbre</b> e <b class="hl">+0,5s</b> de pré-visualização', cards: std, visl: 1, preview: 0.5, lock: 'Alcance Combo 8' },
     { id: 'dourado', n: 'Baralho Dourado', c: '#f2c94c', d: 'Começa com <b class="money">$14</b> e uma Runa do Tesouro', cards: std, money: 10, vouchers: ['tesouro'], lock: 'Tenha $40 numa jornada' },
     { id: 'eco', n: 'Baralho Eco', c: '#56ccf2', d: 'Só 10 símbolos, mas <b class="hl">cada um repetido</b>. Mais pares iguais!', cards: () => { const d = []; for (const s of ['chama', 'mare']) for (let r = 1; r <= 5; r++) { d.push({ suit: s, rank: r }); d.push({ suit: s, rank: r }); } return d; }, lock: 'Limpe um tabuleiro sem errar' },
     { id: 'arcano', n: 'Baralho Arcano', c: '#bb6bd9', d: 'Começa com <b class="hl">Bola de Cristal</b> e 2 Pergaminhos', cards: std, relics: ['cristal'], scrolls: 2, lock: 'Use 10 Pergaminhos' },
     { id: 'celeste', n: 'Baralho Celeste', c: '#00c2a8', d: 'Todos os naipes começam no <b class="hl">nível 2</b>', cards: std, suitLv: 2, lock: 'Use 10 Astros' },
-    { id: 'abismo', n: 'Baralho do Abismo', c: '#1b1b3a', d: '<b class="hl">+1 espaço</b> de Relíquia, mas <b class="tent">-1 Tentativa</b>', cards: std, slots: 1, tent: -1, lock: 'Alcance o Círculo 5' },
+    { id: 'abismo', n: 'Baralho do Abismo', c: '#1b1b3a', d: '<b class="hl">+1 espaço</b> de Relíquia, mas <b class="tent">-1 Vida</b>', cards: std, slots: 1, tent: -1, lock: 'Alcance o Círculo 5' },
     { id: 'mono', n: 'Baralho Monocromo', c: '#e0e0e0', d: 'Todas as cartas do <b class="hl">mesmo naipe</b>, símbolos repetidos. Puro cérebro.', cards: (rng) => { const s = rng.pick(M.SUIT_KEYS); const d = []; for (let k = 0; k < 4; k++) for (let r = 1; r <= 5; r++) d.push({ suit: s, rank: r }); return d; }, lock: 'Vença uma jornada' },
     { id: 'caos', n: 'Baralho do Caos', c: '#ff6b35', d: 'Cartas aleatórias e encantadas, e uma Relíquia aleatória', cards: (rng) => { const d = []; for (let i = 0; i < 20; i++) d.push({ suit: rng.pick(M.SUIT_KEYS), rank: rng.int(1, 9), enh: rng.chance(0.3) ? rng.pick(['bonus', 'mult', 'gold', 'glass', 'lucky', 'steel']) : null }); return d; }, randomRelic: 1, lock: 'Jogue 10 jornadas' },
   ];
@@ -270,7 +270,7 @@
     { id: 1, n: 'Selo Branco', c: '#f1f1f1', d: 'Dificuldade padrão' },
     { id: 2, n: 'Selo Vermelho', c: '#ff4d4d', d: 'O Salão Pequeno não dá recompensa' },
     { id: 3, n: 'Selo Verde', c: '#3ddc84', d: 'Os alvos crescem mais rápido' },
-    { id: 4, n: 'Selo Negro', c: '#555', d: '<b class="tent">-1 Tentativa</b> por salão' },
+    { id: 4, n: 'Selo Negro', c: '#555', d: '<b class="tent">-1 Vida</b> por salão' },
     { id: 5, n: 'Selo Dourado', c: '#ffd166', d: 'Pré-visualização reduzida pela metade' },
   ];
 
