@@ -91,7 +91,7 @@
       { id: 'collection', i: '📖', n: 'Compêndio', d: `${relSeen}/${M.RELICS.length} relíquias`, k: relSeen / M.RELICS.length, badge: U.freshCount(['relic', 'deck', 'back']), c: '#3cb4ff' },
       { id: 'achievements', i: '🏆', n: 'Conquistas', d: `${achN}/${M.ACHS.length} concluídas`, k: achN / M.ACHS.length, c: '#ffc93c' },
       { id: 'rewards', i: '🎁', n: 'Recompensas', d: nextRwName ? `Nv. ${nextRw}: ${nextRwName}` : 'Todas liberadas!', k: p.xp / need, c: '#ff8af0' },
-      { id: 'stats', i: '📊', n: 'Estatísticas', d: p.stats.bestAnte ? `Recorde: Círculo ${p.stats.bestAnte}` : 'Jogue para criar recordes', k: Math.min(1, p.stats.bestAnte / 8), c: '#43e27a' },
+      { id: 'stats', i: '📊', n: 'Estatísticas', d: p.stats.bestAnte ? `Recorde: Reino ${p.stats.bestAnte}` : 'Jogue para criar recordes', k: Math.min(1, p.stats.bestAnte / 8), c: '#43e27a' },
     ];
     $('#screen').innerHTML = `<div class="menu menu2">
       <div class="logo">${'MNEMO'.split('').map((l, i) => `<div class="logo-card" style="--i:${i}"><div class="lc-inner"><div class="lc-back">${M.cardBackHTML(p.settings.back)}</div><div class="lc-face s-${M.SUIT_KEYS[i % 4]}"><span>${l}</span></div></div></div>`).join('')}</div>
@@ -99,7 +99,7 @@
       <div class="menu-btns">
         ${has ? `<button class="btn huge orange" id="m-cont">▶ Continuar jornada</button>` : ''}
         <button class="btn huge ${has ? 'blue' : 'orange'}" id="m-new">✦ Nova jornada</button>
-        <button class="daily-card" id="m-daily"><span class="dc-ico">📅</span><span class="dc-txt"><b>Desafio diário</b><small>${daily.bestAnte ? `Seu melhor hoje: Círculo ${daily.bestAnte}` : 'Mesma partida para todo mundo hoje'}</small></span><span class="dc-go">▶</span></button>
+        <button class="daily-card" id="m-daily"><span class="dc-ico">📅</span><span class="dc-txt"><b>Desafio diário</b><small>${daily.bestAnte ? `Seu melhor hoje: Reino ${daily.bestAnte}` : 'Mesma partida para todo mundo hoje'}</small></span><span class="dc-go">▶</span></button>
       </div>
       <div class="hub">${tiles.map(t => `<button class="hub-tile" data-go="${t.id}" style="--tc:${t.c}">
           ${t.badge ? `<span class="hub-badge">${t.badge} NOVO</span>` : ''}
@@ -202,7 +202,7 @@
     }).join('')}</div></div>`).join('');
     if (tab === 'scrolls') return `<div class="cells">${M.SCROLLS.map(s => cell('scroll', s.id, U.scrollHTML(s.id), p.seen.scrolls[s.id] ? 'found' : 'open', s.n)).join('')}</div>`;
     if (tab === 'astros') return `<div class="cells">${M.ASTROS.map(s => cell('astro', s.id, U.astroHTML(s.id), p.seen.astros[s.id] ? 'found' : 'open', s.n)).join('')}</div>`;
-    if (tab === 'bosses') return [['Chefes', M.BOSSES], ['Chefes finais (Círculo 8)', M.FINAL_BOSSES]].map(([h, L]) => `<div class="col-sec"><div class="col-h">${h}</div><div class="cells">${L.map(b => {
+    if (tab === 'bosses') return [['Chefes', M.BOSSES], ['Chefes finais (Reino 8)', M.FINAL_BOSSES]].map(([h, L]) => `<div class="col-sec"><div class="col-h">${h}</div><div class="cells">${L.map(b => {
       const s = p.seen.bosses[b.id];
       return cell('boss', b.id, `<div class="boss-chip" style="--bc:${b.c}">${s ? b.i : '?'}</div>`, s ? 'found' : 'open', s ? b.n : '???');
     }).join('')}</div></div>`).join('');
@@ -237,7 +237,7 @@
       U.detail({ visual: U.astroHTML(id, { cls: ' big' }), color: d.suit === 'all' ? '#888' : M.SUITS[d.suit].c, title: d.n, chips: `<span class="rar" style="--rc:#3cb4ff">Astro · melhora permanente</span>`, body: M.astroDesc(d), status: p.seen.astros[id] ? statusBox('found', 'Já usado.') : statusBox('open', 'Aparece na loja e nos Pacotes Celestes.') });
     } else if (k === 'boss') {
       const b = M.BOSS[id], s = p.seen.bosses[id];
-      U.detail({ visual: `<div class="boss-chip big" style="--bc:${b.c}">${s ? b.i : '?'}</div>`, color: b.c, title: s ? b.n : 'Chefe desconhecido', chips: `<span class="rar" style="--rc:#f2464f">${b.final ? 'Chefe final · Círculo 8' : 'Chefe'}</span>`, body: s ? `<b>Regra:</b> ${b.d}` : '<i>Você ainda não enfrentou este chefe.</i>', status: s ? statusBox('found', 'Já enfrentado.') : statusBox('open', 'Aparece como terceiro salão de algum Círculo.') });
+      U.detail({ visual: `<div class="boss-chip big" style="--bc:${b.c}">${s ? b.i : '?'}</div>`, color: b.c, title: s ? b.n : 'Chefe desconhecido', chips: `<span class="rar" style="--rc:#f2464f">${b.final ? 'Chefe final · Reino 8' : 'Chefe'}</span>`, body: s ? `<b>Regra:</b> ${b.d}` : '<i>Você ainda não enfrentou este chefe.</i>', status: s ? statusBox('found', 'Já enfrentado.') : statusBox('open', 'Aparece como terceiro salão de algum Reino.') });
     } else if (k === 'deck') {
       const d = M.DECK[id], ok = M.save.isDeckUnlocked(id), ui = U.unlockInfo('deck', id), won = p.deckWins[id];
       U.detail({ visual: `<div class="deck-mini big" style="--dc:${d.c}">${M.cardBackHTML(p.settings.back)}</div>`, color: d.c, title: d.n, chips: won ? `<span class="rar" style="--rc:${M.STAKES[won - 1].c};color:#111">Vencido até ${M.STAKES[won - 1].n}</span>` : '', body: d.d,
@@ -250,7 +250,7 @@
         actions: ok && !on ? [{ t: 'Usar este verso', cls: 'green', fn: () => { p.settings.back = id; M.save.saveProfile(); U.closeOverlay(); U.renderCollection('backs'); U.toast('🎴', 'Verso equipado', b.n); } }] : [] });
     } else if (k === 'voucher') {
       const v = M.VOUCHER[id];
-      U.detail({ visual: `<div class="voucher big"><div class="voucher-in"><div class="v-rune">${v.i}</div></div></div>`, color: '#ffc93c', title: v.n, chips: `<span class="rar" style="--rc:#a87900">Runa · dura a jornada inteira · $10</span>`, body: v.d, status: p.seen.vouchers[id] ? statusBox('found', 'Já gravada numa jornada.') : statusBox('open', 'Uma Runa aparece na loja a cada Círculo.') });
+      U.detail({ visual: `<div class="voucher big"><div class="voucher-in"><div class="v-rune">${v.i}</div></div></div>`, color: '#ffc93c', title: v.n, chips: `<span class="rar" style="--rc:#a87900">Runa · dura a jornada inteira · $10</span>`, body: v.d, status: p.seen.vouchers[id] ? statusBox('found', 'Já gravada numa jornada.') : statusBox('open', 'Uma Runa aparece na loja a cada Reino.') });
     } else if (k === 'tag') {
       const t = M.TAG[id];
       U.detail({ visual: `<div class="boss-chip big" style="--bc:#ffc93c">${t.i}</div>`, color: '#ffc93c', title: t.n, chips: `<span class="rar" style="--rc:#a87900">Bênção</span>`, body: t.d + '<div class="dt-note">Ganhe ao <b>pular</b> um Salão Pequeno ou Grande.</div>', status: p.seen.tags[id] ? statusBox('found', 'Já recebida.') : statusBox('open', 'Pule um salão para ganhar.') });
@@ -328,7 +328,7 @@
       <div class="page-body2">
         <div class="lvl-hero"><div class="lh-badge"><small>Nível</small><b>${p.level}</b></div>
           <div class="lh-main"><div class="lh-t">${p.xp} / ${need} XP para o nível ${p.level + 1}</div>${bar(p.xp / need, 'xp')}
-          <div class="lh-tip">💡 XP vem de: Círculos alcançados, pares formados, chefes derrotados, maior combo e vitórias.</div></div></div>
+          <div class="lh-tip">💡 XP vem de: Reinos alcançados, pares formados, chefes derrotados, maior combo e vitórias.</div></div></div>
         <div class="track">${levels.map((lv, i) => {
           const rw = M.LEVEL_REWARDS[lv], got = p.level >= lv, next = !got && (i === 0 || p.level >= levels[i - 1]);
           return `<button class="tnode${got ? ' got' : ''}${next ? ' next' : ''}" data-lv="${lv}">
@@ -354,12 +354,12 @@
     const s = P().stats, p = P();
     const h = Math.floor(s.playTime / 3600), mi = Math.floor((s.playTime % 3600) / 60);
     const rec = [
-      ['🌀', 'Melhor Círculo', s.bestAnte || '—', 'c'], ['🔥', 'Maior combo', s.bestCombo ? 'x' + s.bestCombo : '—', 'f'],
+      ['🌀', 'Melhor Reino', s.bestAnte || '—', 'c'], ['🔥', 'Maior combo', s.bestCombo ? 'x' + s.bestCombo : '—', 'f'],
       ['💥', 'Melhor par', M.fmt(s.bestPair), 'r'], ['🏛️', 'Melhor salão', M.fmt(s.bestRound), 'g'],
     ];
     const rows = [['🎮', 'Jornadas', s.runs], ['🏆', 'Vitórias', s.wins], ['🃏', 'Pares formados', M.fmt(s.pairs)], ['👹', 'Chefes derrotados', s.bosses],
       ['📜', 'Pergaminhos usados', s.scrolls], ['🪐', 'Astros usados', s.astros], ['🥃', 'Vidros quebrados', s.glass], ['❌', 'Erros', M.fmt(s.mismatches)],
-      ['💰', 'Mais dinheiro', '$' + s.maxMoney], ['⏱️', 'Tempo de jogo', `${h}h ${mi}min`], ['⭐', 'Nível', p.level], ['📅', 'Melhor diário', p.daily.bestAnte ? 'Círculo ' + p.daily.bestAnte : '—']];
+      ['💰', 'Mais dinheiro', '$' + s.maxMoney], ['⏱️', 'Tempo de jogo', `${h}h ${mi}min`], ['⭐', 'Nível', p.level], ['📅', 'Melhor diário', p.daily.bestAnte ? 'Reino ' + p.daily.bestAnte : '—']];
     const acc = s.pairs + s.mismatches ? Math.round(s.pairs / (s.pairs + s.mismatches) * 100) : 0;
     $('#screen').innerHTML = `<div class="page2">
       ${pageHead('Estatísticas', '📊', Math.min(1, (s.bestAnte || 0) / 8), 'Seus recordes e números de todas as jornadas')}

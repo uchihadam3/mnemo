@@ -12,17 +12,21 @@
     if (c.enh === 'stone') return `<div class="face stone${ed}"><div class="stone-rune">ᛟ</div><div class="face-label">PEDRA</div>${c.ed ? '<div class="ed-layer"></div>' : ''}</div>`;
     const enh = c.enh ? ` enh-${c.enh}` : '';
     const badge = c.enh ? `<div class="enh-badge enh-b-${c.enh}">${{ bonus: '+30', mult: '+5', gold: '$', glass: '◇', lucky: '☘', steel: '⛨' }[c.enh] || ''}</div>` : '';
-    return `<div class="face s-${c.suit}${enh}${ed}" style="--sc:${S.c};--sc2:${S.c2};--sd:${S.dark}">
+    return `<div class="face fz s-${c.suit}${enh}${ed}" style="--sc:${S.c};--sc2:${S.c2};--sd:${S.dark}">
       <div class="face-bg"></div>
-      <div class="corner tl"><span>${M.roman(c.rank)}</span>${M.suitIcon(c.suit, 'corner-suit')}</div>
-      <div class="glyph-wrap">${M.glyph(c.rank)}</div>
+      <div class="fz-frame"></div>
+      <div class="fz-shine"></div>
+      <div class="fz-art"><img src="${M.emoSrc(M.RANK_EMO[c.rank - 1])}" alt="" draggable="false"></div>
+      <div class="fz-num">${c.rank}</div>
+      <div class="fz-suit">${M.suitIcon(c.suit, 'corner-suit')}</div>
       ${opts.label !== false ? `<div class="face-name">${R.n}</div>` : ''}
       ${badge}
       ${c.enh === 'glass' ? '<div class="glass-cracks"></div>' : ''}
       ${c.ed ? '<div class="ed-layer"></div>' : ''}
     </div>`;
   };
-  M.cardBackHTML = (style) => `<div class="back back-${style || 'mandala'}"><div class="back-art"></div></div>`;
+  M.RANK_EMO = ['👁️', '🗝️', '🌀', '💖', '⚡', '⏳', '💎', '💀', '👑'];
+  M.cardBackHTML = (style) => `<div class="back back-${style || 'mandala'}"><div class="back-art"></div>${(style || 'mandala') === 'mandala' ? `<img class="back-emb" src="${M.emoSrc('🔮')}" alt="" draggable="false">` : ''}</div>`;
   M.keyOf = (c) => c.mimic ? 'mimic' + c.id : (c.enh === 'stone' ? 'stone' : `${c.suit}|${c.rank}|${c.enh || ''}|${c.ed || ''}`);
 
   /* ---------------- Início do salão ---------------- */

@@ -1,7 +1,7 @@
 # 🃏 MNEMO — o roguelike da memória
 
 **MNEMO** é um roguelike de construção de baralho em cima do bom e velho **jogo da memória**.
-Vire cartas, forme pares, encadeie **combos**, monte builds absurdas com **Relíquias** e derrote os **Chefes** dos 8 Círculos da Memória.
+Vire cartas, forme pares, encadeie **combos**, monte builds absurdas com **Relíquias** e derrote os **Chefes** dos 8 Reinos da Memória.
 
 ### ▶️ [Jogar agora no navegador](https://uchihadam3.github.io/mnemo/) · [⬇️ Baixar instaladores](https://github.com/uchihadam3/mnemo/releases/latest)
 
@@ -32,7 +32,7 @@ Em *Opções* dá para **exportar/importar o save** (backup ou levar para outro 
 - **Lembrança**: a 2ª carta já tinha sido vista. **Sorte Cega**: nenhuma das duas tinha sido vista → **x2 Mult**.
 - **Vislumbres** espiam uma carta sem custo (botão direito ou tecla Espaço).
 - **Tabuleiro limpo** = +2 Vidas e um novo tabuleiro.
-- 3 salões por Círculo: **Pequeno**, **Grande** e **Chefe**. Vença o 8º Círculo — ou continue no **modo sem fim**.
+- 3 salões por Reino: **Pequeno**, **Grande** e **Chefe**. Vença o 8º Reino e devolva as 8 memórias de Mnemósine — ou continue no **modo sem fim**.
 
 Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Astro) **não** forma par!
 
@@ -70,4 +70,5 @@ Ao criar uma tag `v*` (ex.: `git tag v1.0.0 && git push --tags`), o GitHub Actio
   - Chefe: "Deep Haze" — Kevin MacLeod ([incompetech.com](https://incompetech.com)), CC BY 4.0
   - Loja: "Look Trippy" — [Pro Sensory](https://opengameart.org/content/look-trippy), CC0
 - **Efeitos sonoros:** [Kenney](https://kenney.nl) e [Juhani Junkala](https://opengameart.org/content/512-sound-effects-8-bit-style) (CC0).
+- **Figuras 3D:** [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) da Microsoft (licença MIT).
 - **Fontes:** Lilita One e Nunito (SIL Open Font License).

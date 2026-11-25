@@ -98,7 +98,7 @@
     const runScreens = ['select', 'round', 'cashout', 'shop'];
     if (runScreens.includes(name)) {
       if (!$('#side')) U.renderRunLayout();
-      M.bg.set(name === 'shop' ? 'shop' : (run.round === 2 && name !== 'cashout' ? 'boss' : 'run'));
+      if (name === 'shop') M.bg.set('shop'); else if (run.round === 2 && name !== 'cashout') M.bg.set('boss'); else M.bg.setPal(M.realm(run.ante).pal);
       if (name === 'shop') M.audio.music('shop');
       else if (name === 'round' || name === 'select') M.audio.music(run.round === 2 ? 'boss' : 'round');
       M.audio.mood(name === 'round' ? 'round' : 'normal');
@@ -179,7 +179,7 @@
       </div>
       <div class="side-row two">
         <div class="side-money"><label>Dinheiro</label><b data-h="money">$${run.money}</b></div>
-        <div class="side-stat"><label>Círculo</label><b>${run.ante}<small>/8</small></b><small class="sub">salão ${run.round + 1}/3</small></div>
+        <div class="side-stat"><label>Reino</label><b>${M.emoImg(M.realm(run.ante).i)} ${run.ante}<small>/8</small></b><small class="sub">salão ${run.round + 1}/3</small></div>
       </div>
       <div class="side-btns">
         <button class="btn small" data-act2="deck">🂠 Baralho</button>
@@ -190,7 +190,7 @@
     // HUD do celular
     $('#mhud').innerHTML = `
       <div class="mh-row1">
-        <div class="mh-blind" style="--bc:${bi.c}"><span class="mh-bn">${bi.i} ${bi.n}</span>${inRound ? `<span class="mh-goal">Meta <b data-h="target">${M.fmt(rs.target)}</b></span>` : `<span class="mh-goal">Círculo ${run.ante}/8 · ${run.round + 1}/3</span>`}</div>
+        <div class="mh-blind" style="--bc:${bi.c}"><span class="mh-bn">${bi.i} ${bi.n}</span>${inRound ? `<span class="mh-goal">Meta <b data-h="target">${M.fmt(rs.target)}</b></span>` : `<span class="mh-goal">${M.emoImg(M.realm(run.ante).i)} Reino ${run.ante}/8 · salão ${run.round + 1}/3</span>`}</div>
         <div class="mh-score${inRound ? '' : ' dim'}" data-h="scorebox"><b data-h="score">${inRound ? M.fmt(rs.score) : '—'}</b><div class="progress"><i data-h="prog"></i></div></div>
         <button class="mh-menu" data-act2="pause" aria-label="Menu">☰</button>
       </div>
@@ -319,7 +319,7 @@
       const tag = round < 2 ? M.TAG[run.tags[round]] : null;
       const rw = G.reward(round);
       return `<div class="blind-card ${state}${round === 2 ? ' boss' : ''}" style="--bc:${bi.c}">
-        <div class="bc-top">${state === 'done' ? '✓ Vencido' : state === 'cur' ? 'Próximo desafio' : round === 2 ? 'Chefe do Círculo' : 'Depois'}</div>
+        <div class="bc-top">${state === 'done' ? '✓ Vencido' : state === 'cur' ? 'Próximo desafio' : round === 2 ? 'Chefe do Reino' : 'Depois'}</div>
         <div class="bc-head"><div class="bc-chip"><span>${bi.i}</span></div>
           <div class="bc-titles"><div class="bc-name">${bi.n}</div><div class="bc-mini">Meta <b>${M.fmt(tgt)}</b> · <b class="money">$${rw}</b></div></div></div>
         ${bi.boss ? `<div class="bc-boss">⚠ ${bi.boss.d}</div>` : ''}
@@ -329,9 +329,36 @@
         ${tag && state === 'cur' ? `<div class="bc-skip"><button class="btn small" id="btn-skip">Pular e ganhar:</button><div class="bc-tag" data-tip="col-tag:${tag.id}">${tag.i} <span>${tag.n}</span></div></div>` : ''}
       </div>`;
     }).join('');
-    C.innerHTML = `<div class="select-wrap"><div class="select-title">Círculo ${run.ante}<small>${run.ante > 8 ? ' (sem fim)' : ' de 8'}</small></div><div class="blinds">${cards}</div></div>`;
+    C.innerHTML = `<div class="select-wrap">${U.journeyHTML(run)}<div class="blinds">${cards}</div></div>`;
+    $('.journey')?.addEventListener('click', () => U.showStory(true));
     $('#btn-play').onclick = (e) => { e.currentTarget.disabled = true; M.audio.play('click'); B.startRound(); };
     const sk = $('#btn-skip'); if (sk) sk.onclick = () => G.skip();
+  };
+
+  /* ============ mapa da jornada (objetivo do jogo) ============ */
+  U.journeyHTML = (run) => {
+    const R = M.realm(run.ante), endless = run.ante > 8;
+    const nodes = M.REALMS.map((r, i) => {
+      const n = i + 1, st = endless || n < run.ante ? 'done' : n === run.ante ? 'cur' : 'next';
+      return `<div class="jn ${st}" title="${r.n}"><div class="jn-orb">${M.emoImg(r.i)}</div>${st === 'done' ? '<span class="jn-mem">✨</span>' : ''}</div>`;
+    }).join('<div class="jl"></div>');
+    const left = Math.max(0, 8 - run.ante + 1);
+    return `<div class="journey">
+      <div class="jr-head"><div class="jr-icon">${M.emoImg(R.i)}</div><div><div class="jr-kicker">${endless ? 'Modo sem fim' : `Reino ${run.ante} de 8`}</div><div class="jr-name">${R.n}</div></div></div>
+      <div class="jr-path">${nodes}<div class="jl"></div><div class="jn goal"><div class="jn-orb">${M.emoImg('👸')}</div></div></div>
+      <div class="jr-goal">🎯 ${endless ? 'Vá o mais longe que conseguir!' : `Vença o chefe deste reino para recuperar <b>${R.mem}</b>. Faltam <b>${left}</b> ${left === 1 ? 'memória' : 'memórias'} para salvar Mnemósine.`}</div>
+    </div>`;
+  };
+  U.showStory = (again) => {
+    const o = U.overlay(`<div class="story">
+      <div class="st-hero">${M.emoImg('👸', 'st-queen')}</div>
+      <div class="panel-title">A Memória de Mnemósine</div>
+      <div class="st-text">${M.STORY}</div>
+      <div class="st-realms">${M.REALMS.map((r, i) => `<div class="st-r"><div>${M.emoImg(r.i)}</div><small>${i + 1}. ${r.n}</small></div>`).join('')}</div>
+      <div class="st-how"><b>Como avançar:</b> cada reino tem <b>3 salões</b>. Faça os pontos pedidos formando pares. O 3º salão é o <b>chefe</b>: venceu, a memória volta! ✨</div>
+      <button class="btn huge orange" id="st-go">${again ? 'Entendi!' : 'Começar a jornada ✦'}</button>
+    </div>`, { noClose: !again });
+    o.querySelector('#st-go').onclick = () => { M.audio.play('click'); U.closeOverlay(); };
   };
 
   /* ============ salão (tabuleiro) ============ */
@@ -440,12 +467,15 @@
     const run = M.run, C = $('#center');
     const lines = run.cashout || [];
     const tot = lines.reduce((s, l) => s + l.v, 0);
+    const boss = run.round === 2, R = M.realm(run.ante);
     C.innerHTML = `<div class="panel cashout">
-      <div class="panel-title gold">Salão vencido!</div>
+      <div class="panel-title gold">${boss ? 'Chefe derrotado!' : 'Salão vencido!'}</div>
+      ${boss ? `<div class="memory-get"><div class="mg-orb">${M.emoImg(R.i)}</div><div><small>✨ Memória recuperada ${Math.min(run.ante, 8)}/8</small><b>${R.mem[0].toUpperCase() + R.mem.slice(1)}</b></div></div>` : ''}
       <div class="co-lines">${lines.map((l, i) => `<div class="co-line" style="animation-delay:${i * 0.18}s"><span>${l.icon ? l.icon + ' ' : ''}${l.t}</span><b class="money">${'$'.repeat(Math.min(8, l.v))}${l.v > 8 ? '+' : ''} $${l.v}</b></div>`).join('')}</div>
       <button class="btn big gold" id="btn-collect" style="animation-delay:${lines.length * 0.18 + 0.1}s">Receber <b>$${tot}</b></button>
     </div>`;
     lines.forEach((l, i) => setTimeout(() => M.audio.play('coin'), i * 180 / (M.speed || 1)));
+    if (boss) { M.audio.play('unlock'); M.fx.confetti(140); }
     $('#btn-collect').onclick = () => {
       const el = $('#btn-collect'); const [x, y] = M.fx.at(el);
       M.fx.burst(x, y, { n: 40, colors: ['#ffd166', '#fff3b0', '#fff'], speed: 500 });
@@ -482,14 +512,14 @@
         <div class="price-tag">$${G.price(10)}</div>
         <div class="voucher" data-tip="voucher:${v.id}"><div class="voucher-in"><div class="v-rune">${v.i}</div></div></div>
         <div class="si-name">${v.n}</div>
-        <button class="btn small gold buy" id="buy-voucher">Gravar</button></div>` : '<div class="sold-out small">Runa gravada.<br>Volte no próximo Círculo.</div>';
+        <button class="btn small gold buy" id="buy-voucher">Gravar</button></div>` : '<div class="sold-out small">Runa gravada.<br>Volte no próximo Reino.</div>';
     C.innerHTML = `<div class="shop">
       <div class="shop-head"><div class="shop-sign">LOJA ${disc}</div><div class="merchant"><span class="owl">🦉</span><div class="bubble">${sh.quote}</div></div></div>
       <div class="shop-body">
         <div class="shop-section main"><div class="sec-label">Relíquias & Itens</div><div class="shop-row" id="shop-items">${items}</div></div>
         <div class="shop-lower">
           <div class="shop-section"><div class="sec-label">Pacotes</div><div class="shop-row">${packs}</div></div>
-          <div class="shop-section"><div class="sec-label">Runa do Círculo</div><div class="shop-row">${voucher}</div></div>
+          <div class="shop-section"><div class="sec-label">Runa do Reino</div><div class="shop-row">${voucher}</div></div>
         </div>
       </div>
       <div class="shop-actions">
@@ -639,7 +669,7 @@
     U.overlay(`<div class="help"><div class="panel-title">Como jogar</div>
       <div class="help-grid">
       <div><b class="hl">🃏 O básico</b><p>Vire duas cartas. Se forem iguais, é um <b>par</b> e você pontua. Se não, você perde uma <b class="tent">Vida</b>. Fique sem Vidas e a jornada acaba.</p></div>
-      <div><b class="hl">🎯 O objetivo</b><p>Alcance a <b>pontuação mínima</b> de cada salão. São 3 salões por Círculo e 8 Círculos. O terceiro salão é sempre um <b>Chefe</b> com regras malvadas.</p></div>
+      <div><b class="hl">🎯 O objetivo</b><p>Alcance a <b>pontuação mínima</b> de cada salão. São 3 salões por Reino e 8 Reinos. O terceiro salão é sempre um <b>Chefe</b> com regras malvadas.</p></div>
       <div><b class="hl">✖ Pontuação</b><p>Cada par vale <b class="chips">Fichas</b> × <b class="mult">Mult</b>. Pares seguidos sem errar aumentam o <b>Combo</b>, que soma Mult. Errar zera o Combo.</p></div>
       <div><b class="hl">🧠 Lembrança x Sorte</b><p>Se a segunda carta já tinha sido vista, é <b>Lembrança</b>. Se nenhuma das duas tinha sido vista, é <b>Sorte Cega</b> (x2 Mult!).</p></div>
       <div><b class="hl">👁 Vislumbres</b><p>Espiam uma carta sem gastar Vida. Botão direito numa carta, ou clique no contador.</p></div>
@@ -665,7 +695,7 @@
       <div class="opt"><span>🎴 Verso das cartas</span><button class="btn small" id="o-back">Escolher</button></div>
       <div class="opt-row"><button class="btn small" id="o-full">⛶ Tela cheia</button><button class="btn small" id="o-exp">⬇ Exportar save</button><button class="btn small" id="o-imp">⬆ Importar save</button></div>
       <div class="opt-row"><button class="btn small red" id="o-reset">Apagar todo o progresso</button></div>
-      <div class="credits"><b>Créditos</b><br>Músicas: "Chillwave Nightdrive" — Bogart VGM (CC BY 3.0) · "Electro" e "Look Trippy" — Pro Sensory (CC0) · "Deep Haze" — Kevin MacLeod, incompetech.com (CC BY 4.0)<br>Efeitos sonoros: Kenney (kenney.nl) e Juhani Junkala (CC0)</div>
+      <div class="credits"><b>Créditos</b><br>Músicas: "Chillwave Nightdrive" — Bogart VGM (CC BY 3.0) · "Electro" e "Look Trippy" — Pro Sensory (CC0) · "Deep Haze" — Kevin MacLeod, incompetech.com (CC BY 4.0)<br>Efeitos sonoros: Kenney (kenney.nl) e Juhani Junkala (CC0)<br>Figuras 3D: Microsoft Fluent Emoji (MIT)</div>
       <div class="ver">MNEMO v${M.VERSION}</div></div>`);
     const save = () => { M.save.saveProfile(); M.applySettings(); };
     o.querySelector('#o-mus').oninput = (e) => { S.music = +e.target.value; save(); };
@@ -733,7 +763,7 @@
       <div class="menu-btns">
         ${has ? `<button class="btn huge orange" id="m-cont">▶ Continuar jornada</button>` : ''}
         <button class="btn huge ${has ? 'blue' : 'orange'}" id="m-new">✦ Nova jornada</button>
-        <button class="btn big purple" id="m-daily">📅 Desafio diário ${daily.bestAnte ? `<small>(melhor: Círculo ${daily.bestAnte})</small>` : ''}</button>
+        <button class="btn big purple" id="m-daily">📅 Desafio diário ${daily.bestAnte ? `<small>(melhor: Reino ${daily.bestAnte})</small>` : ''}</button>
         <div class="menu-row">
           <button class="btn" id="m-col">📖 Compêndio</button>
           <button class="btn" id="m-ach">🏆 Conquistas <small>${Object.keys(P.ach).length}/${M.ACHS.length}</small></button>
@@ -815,6 +845,8 @@
         U._lastDeck = d.id; U._lastStake = stake;
         G.newRun({ deck: d.id, stake });
         M.profile.tutorial = true; M.save.saveProfile(); U.show('select');
+        M.profile.tips = M.profile.tips || {};
+        if (!M.profile.tips.story) { M.profile.tips.story = 1; M.save.saveProfile(); U.showStory(false); }
       };
     };
     draw();
@@ -822,7 +854,7 @@
 
   /* ============ fim de jogo ============ */
   const endStats = (run) => `<div class="end-stats">
-    <div><label>Círculo</label><b>${run.ante}</b></div>
+    <div><label>Reino</label><b>${run.ante}</b></div>
     <div><label>Pares</label><b>${run.stats.pairs}</b></div>
     <div><label>Maior combo</label><b>x${run.stats.bestCombo}</b></div>
     <div><label>Melhor par</label><b>${M.fmt(run.stats.bestPair)}</b></div>
@@ -843,7 +875,7 @@
     const res = G.endRun(false);
     $('#screen').innerHTML = `<div class="endscreen lose"><div class="panel">
       <div class="panel-title big red">Fim da jornada</div>
-      <div class="end-sub">Sua memória falhou no Círculo ${run.ante}... mas ela fica mais forte a cada tentativa.</div>
+      <div class="end-sub">Sua memória falhou no Reino ${run.ante}... mas ela fica mais forte a cada tentativa.</div>
       ${endStats(run)}${xpBlock(res)}
       <div class="nr-btns"><button class="btn big" id="go-menu">Menu</button><button class="btn huge orange" id="go-new">Nova jornada ✦</button></div></div></div>`;
     M.run = null;
@@ -857,7 +889,8 @@
     M.audio.play('win'); M.fx.confetti(260);
     $('#screen').innerHTML = `<div class="endscreen win"><div class="panel">
       <div class="panel-title big gold">VITÓRIA!</div>
-      <div class="end-sub">Você dominou os 8 Círculos da Memória com o ${M.DECK[run.deck].n}!</div>
+      <div class="victory-queen">${M.emoImg('👸')}</div>
+      <div class="end-sub">Você devolveu as <b>8 memórias</b> a Mnemósine com o ${M.DECK[run.deck].n}! Ela se lembra de tudo — e de você. ✨</div>
       ${endStats(run)}
       <div class="nr-btns"><button class="btn big" id="v-end">Encerrar e receber XP</button><button class="btn huge purple" id="v-endless">Continuar (modo sem fim) ∞</button></div></div></div>`;
     $('#v-endless').onclick = () => { G.continueEndless(); U.show('shop'); };
@@ -921,7 +954,7 @@
     M.bg.set('menu');
     const s = M.profile.stats, P = M.profile;
     const h = Math.floor(s.playTime / 3600), m = Math.floor((s.playTime % 3600) / 60);
-    const rows = [['Jornadas', s.runs], ['Vitórias', s.wins], ['Melhor Círculo', s.bestAnte], ['Maior combo', 'x' + s.bestCombo], ['Pares formados', M.fmt(s.pairs)], ['Melhor par', M.fmt(s.bestPair)], ['Melhor salão', M.fmt(s.bestRound)], ['Chefes derrotados', s.bosses], ['Pergaminhos usados', s.scrolls], ['Astros usados', s.astros], ['Vidros quebrados', s.glass], ['Erros', M.fmt(s.mismatches)], ['Mais dinheiro', '$' + s.maxMoney], ['Tempo de jogo', `${h}h ${m}min`], ['Nível de perfil', P.level]];
+    const rows = [['Jornadas', s.runs], ['Vitórias', s.wins], ['Melhor Reino', s.bestAnte], ['Maior combo', 'x' + s.bestCombo], ['Pares formados', M.fmt(s.pairs)], ['Melhor par', M.fmt(s.bestPair)], ['Melhor salão', M.fmt(s.bestRound)], ['Chefes derrotados', s.bosses], ['Pergaminhos usados', s.scrolls], ['Astros usados', s.astros], ['Vidros quebrados', s.glass], ['Erros', M.fmt(s.mismatches)], ['Mais dinheiro', '$' + s.maxMoney], ['Tempo de jogo', `${h}h ${m}min`], ['Nível de perfil', P.level]];
     $('#screen').innerHTML = `<div class="page"><div class="page-head"><button class="btn" id="pg-back">◀ Voltar</button><div class="panel-title big">Estatísticas</div><div></div></div>
       <div class="page-body"><div class="stats-grid">${rows.map(([k, v]) => `<div class="stat"><label>${k}</label><b>${v}</b></div>`).join('')}</div></div></div>`;
     $('#pg-back').onclick = () => U.show('menu');

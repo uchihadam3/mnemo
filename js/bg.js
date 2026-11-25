@@ -11,6 +11,7 @@
     lose: [[0.05, 0.03, 0.06], [0.22, 0.08, 0.18], [0.20, 0.18, 0.28]],
   };
   BG.set = (name) => { BG.target = PALETTES[name] || PALETTES.menu; };
+  BG.setPal = (pal) => { BG.target = pal; };
 
   const FS = `
 precision mediump float;

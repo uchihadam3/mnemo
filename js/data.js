@@ -259,7 +259,7 @@
     { id: 'eco', n: 'Baralho Eco', c: '#56ccf2', d: 'Só 10 símbolos, mas <b class="hl">cada um repetido</b>. Mais pares iguais!', cards: () => { const d = []; for (const s of ['chama', 'mare']) for (let r = 1; r <= 5; r++) { d.push({ suit: s, rank: r }); d.push({ suit: s, rank: r }); } return d; }, lock: 'Limpe um tabuleiro sem errar' },
     { id: 'arcano', n: 'Baralho Arcano', c: '#bb6bd9', d: 'Começa com <b class="hl">Bola de Cristal</b> e 2 Pergaminhos', cards: std, relics: ['cristal'], scrolls: 2, lock: 'Use 10 Pergaminhos' },
     { id: 'celeste', n: 'Baralho Celeste', c: '#00c2a8', d: 'Todos os naipes começam no <b class="hl">nível 2</b>', cards: std, suitLv: 2, lock: 'Use 10 Astros' },
-    { id: 'abismo', n: 'Baralho do Abismo', c: '#1b1b3a', d: '<b class="hl">+1 espaço</b> de Relíquia, mas <b class="tent">-1 Vida</b>', cards: std, slots: 1, tent: -1, lock: 'Alcance o Círculo 5' },
+    { id: 'abismo', n: 'Baralho do Abismo', c: '#1b1b3a', d: '<b class="hl">+1 espaço</b> de Relíquia, mas <b class="tent">-1 Vida</b>', cards: std, slots: 1, tent: -1, lock: 'Alcance o Reino 5' },
     { id: 'mono', n: 'Baralho Monocromo', c: '#e0e0e0', d: 'Todas as cartas do <b class="hl">mesmo naipe</b>, símbolos repetidos. Puro cérebro.', cards: (rng) => { const s = rng.pick(M.SUIT_KEYS); const d = []; for (let k = 0; k < 4; k++) for (let r = 1; r <= 5; r++) d.push({ suit: s, rank: r }); return d; }, lock: 'Vença uma jornada' },
     { id: 'caos', n: 'Baralho do Caos', c: '#ff6b35', d: 'Cartas aleatórias e encantadas, e uma Relíquia aleatória', cards: (rng) => { const d = []; for (let i = 0; i < 20; i++) d.push({ suit: rng.pick(M.SUIT_KEYS), rank: rng.int(1, 9), enh: rng.chance(0.3) ? rng.pick(['bonus', 'mult', 'gold', 'glass', 'lucky', 'steel']) : null }); return d; }, randomRelic: 1, lock: 'Jogue 10 jornadas' },
   ];
@@ -293,9 +293,9 @@
     { id: 'combo5', n: 'Em Chamas', i: '🔥', d: 'Alcance Combo 5', unlock: { relic: 'corrente' } },
     { id: 'combo8', n: 'Imparável', i: '☄️', d: 'Alcance Combo 8', unlock: { deck: 'rubi' } },
     { id: 'combo12', n: 'Mente Infinita', i: '♾️', d: 'Alcance Combo 12', unlock: { relic: 'ouroboros' } },
-    { id: 'circ3', n: 'Explorador', i: '🧭', d: 'Alcance o Círculo 3', unlock: { relic: 'olho' } },
-    { id: 'circ5', n: 'Abismal', i: '🌀', d: 'Alcance o Círculo 5', unlock: { deck: 'abismo' } },
-    { id: 'vitoria', n: 'Mestre da Memória', i: '🏆', d: 'Vença o Círculo 8', unlock: { deck: 'mono', back: 'ouro' } },
+    { id: 'circ3', n: 'Explorador', i: '🧭', d: 'Alcance o Reino 3', unlock: { relic: 'olho' } },
+    { id: 'circ5', n: 'Abismal', i: '🌀', d: 'Alcance o Reino 5', unlock: { deck: 'abismo' } },
+    { id: 'vitoria', n: 'Mestre da Memória', i: '🏆', d: 'Vença o Reino 8', unlock: { deck: 'mono', back: 'ouro' } },
     { id: 'rico', n: 'Magnata', i: '💸', d: 'Tenha $40 numa jornada', unlock: { deck: 'dourado' } },
     { id: 'perfeito', n: 'Memória Perfeita', i: '🧠', d: 'Limpe um tabuleiro sem errar nenhuma vez', unlock: { deck: 'eco' } },
     { id: 'sortegrande', n: 'Sorte Grande', i: '🎰', d: '3 Sortes Cegas em um só salão', unlock: { relic: 'dado' } },
@@ -307,8 +307,8 @@
     { id: 'intocavel', n: 'Intocável', i: '😇', d: 'Vença um salão sem errar', unlock: { relic: 'lira' } },
     { id: 'veloz', n: 'Velocista', i: '⏱️', d: 'Vença um salão em menos de 25 segundos', unlock: { back: 'neon' } },
     { id: 'vidraceiro', n: 'Vidraceiro', i: '🥃', d: 'Quebre 3 cartas de Vidro', unlock: { back: 'cristal' } },
-    { id: 'diario', n: 'Rotina', i: '📅', d: 'Alcance o Círculo 3 num Desafio Diário', unlock: { back: 'sol' } },
-    { id: 'infinito', n: 'Infinito', i: '🌌', d: 'Alcance o Círculo 10 (modo sem fim)', unlock: { back: 'cosmos' } },
+    { id: 'diario', n: 'Rotina', i: '📅', d: 'Alcance o Reino 3 num Desafio Diário', unlock: { back: 'sol' } },
+    { id: 'infinito', n: 'Infinito', i: '🌌', d: 'Alcance o Reino 10 (modo sem fim)', unlock: { back: 'cosmos' } },
     { id: 'milhao', n: 'Milionário', i: '🤑', d: 'Marque 100.000 pontos em um salão' },
     { id: 'chefe10', n: 'Caçador', i: '🗡️', d: 'Derrote 10 Chefes (no total)' },
   ];
@@ -346,4 +346,20 @@
     'Já experimentou cartas de Vidro? Bonitas, frágeis, como promessas.',
     'Cada Astro que você consome, um naipe fica mais forte.',
   ];
+})();
+
+/* ======================= A JORNADA: 8 REINOS ======================= */
+(function () {
+  M.REALMS = [
+    { n: 'Jardim das Lembranças', i: '🌸', mem: 'a lembrança da infância', pal: [[0.10, 0.05, 0.14], [0.55, 0.22, 0.45], [0.20, 0.50, 0.38]] },
+    { n: 'Biblioteca Esquecida', i: '📚', mem: 'a lembrança das palavras', pal: [[0.09, 0.06, 0.04], [0.45, 0.28, 0.12], [0.55, 0.40, 0.18]] },
+    { n: 'Salão dos Videntes', i: '🔮', mem: 'a lembrança do futuro', pal: [[0.07, 0.03, 0.16], [0.40, 0.15, 0.62], [0.15, 0.35, 0.70]] },
+    { n: 'Floresta dos Ecos', i: '🌲', mem: 'a lembrança da natureza', pal: [[0.02, 0.08, 0.05], [0.10, 0.40, 0.22], [0.40, 0.55, 0.12]] },
+    { n: 'Torre do Relógio', i: '🕰️', mem: 'a lembrança do tempo', pal: [[0.08, 0.05, 0.03], [0.55, 0.32, 0.10], [0.30, 0.20, 0.45]] },
+    { n: 'Cidade Submersa', i: '🌊', mem: 'a lembrança do mar', pal: [[0.01, 0.06, 0.12], [0.05, 0.35, 0.55], [0.10, 0.60, 0.60]] },
+    { n: 'Abismo Estelar', i: '🌌', mem: 'a lembrança das estrelas', pal: [[0.02, 0.02, 0.08], [0.20, 0.12, 0.50], [0.65, 0.25, 0.60]] },
+    { n: 'Templo de Mnemósine', i: '🏛️', mem: 'a lembrança de si mesma', pal: [[0.10, 0.07, 0.02], [0.70, 0.52, 0.15], [0.80, 0.30, 0.45]] },
+  ];
+  M.realm = (ante) => ante <= 8 ? M.REALMS[ante - 1] : { n: `Além do Templo ${ante - 8}`, i: '🌟', mem: 'lembranças perdidas no infinito', pal: M.REALMS[(ante - 1) % 8].pal };
+  M.STORY = 'Mnemósine, a deusa da memória, foi atingida pelo Rio do Esquecimento e perdeu suas lembranças. Elas se espalharam por <b>8 reinos</b>, guardadas por <b>chefes</b>. Vença os salões, derrote cada guardião e devolva as <b>8 memórias</b> a ela!';
 })();
