@@ -40,7 +40,14 @@
   U.cardHTML = (c, cls = '') => `<div class="mini-card${cls}"><div class="card"><div class="card-inner static">${M.cardFaceHTML(c)}</div></div></div>`;
   U.cardTip = (c) => {
     const R = M.RANKS[c.rank - 1];
-    let t = c.enh === 'stone' ? `<div class="tip-title">🪨 Carta de Pedra</div>` : `<div class="tip-title">${R.n} de ${M.SUITS[c.suit].n}</div><div class="tip-desc"><b class="chips">+${R.chips * 2} Fichas</b> por par</div>`;
+    let t;
+    if (c.enh === 'stone') t = `<div class="tip-title">🪨 Carta de Pedra</div><div class="tip-desc">Par de Pedras = <b class="chips">60 Fichas</b></div>`;
+    else {
+      const lv = M.run ? M.run.suitLv[c.suit] : 1, b = M.suitBase(lv), tot = b.chips + R.chips * 2;
+      t = `<div class="tip-title">${R.n} · cor ${M.SUIT_COLOR[c.suit].replace(/s$/, '')}</div>
+        <div class="tip-desc">Quanto vale um par desta carta:</div>
+        <div class="calc-explain"><span><b class="chips">${b.chips}</b> Fichas da cor <small>(nível ${lv})</small></span><span>+ <b class="chips">${R.chips * 2}</b> Fichas das 2 cartas</span><span class="ce-tot">= <b class="chips">${tot} Fichas</b></span><span>× <b class="mult">${b.mult}+ Mult</b> <small>(sobe com o Combo e as Relíquias)</small></span></div>`;
+    }
     if (c.enh) t += `<div class="tip-desc"><b class="hl">${M.ENH[c.enh].n}:</b> ${M.ENH[c.enh].d}</div>`;
     if (c.ed) t += `<div class="tip-desc"><b class="hl">${M.EDITIONS[c.ed].n}:</b> ${M.EDITIONS[c.ed].d}</div>`;
     return t;
@@ -632,10 +639,13 @@
     run.cards.forEach(c => bySuit[c.suit].push(c));
     const html = M.SUIT_KEYS.map(s => {
       const list = bySuit[s].sort((a, b) => a.rank - b.rank);
-      return `<div class="deck-row"><div class="deck-suit" style="--sc:${M.SUITS[s].c}">${M.suitIcon(s)}<b>${M.SUITS[s].n}</b><small>${list.length}</small></div>
-        <div class="deck-cards">${list.map(c => `<div data-tip="deckc:${c.uid}">${U.cardHTML(c)}</div>`).join('') || '<i class="muted">vazio</i>'}</div></div>`;
+      const lv = run.suitLv[s], b = M.suitBase(lv);
+      return `<div class="deck-row"><div class="deck-suit" style="--sc:${M.SUITS[s].c}">${M.suitIcon(s)}<b>${M.SUITS[s].n}</b><small>${list.length} cartas · nível ${lv}</small></div>
+        <div class="deck-cards">${list.map(c => `<div class="dc-cell" data-tip="deckc:${c.uid}">${U.cardHTML(c)}<span class="dc-val">${c.enh === 'stone' ? 60 : b.chips + M.RANKS[c.rank - 1].chips * 2}</span></div>`).join('') || '<i class="muted">vazio</i>'}</div></div>`;
     }).join('');
-    U.overlay(`<div class="deck-view"><div class="panel-title">Seu baralho <small>${run.cards.length} cartas</small></div>${html}</div>`);
+    U.overlay(`<div class="deck-view"><div class="panel-title">Seu baralho <small>${run.cards.length} cartas</small></div>
+      <div class="deck-explain">💡 O número embaixo de cada carta é quantas <b class="chips">Fichas</b> o par dela vale. Os pontos do par são <b class="chips">Fichas</b> × <b class="mult">Mult</b>. Cartas com número maior e cores com <b>nível</b> alto (suba com Astros) valem mais. Toque numa carta para ver a conta.</div>
+      ${html}</div>`);
   };
   U.showRunInfo = () => {
     const run = M.run;

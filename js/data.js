@@ -193,9 +193,10 @@
     { id: 'buraco', n: 'Buraco Negro', i: '⚫', suit: 'all', rare: 1 },
   ];
   M.ASTRO = Object.fromEntries(M.ASTROS.map(a => [a.id, a]));
+  M.SUIT_COLOR = { chama: 'vermelhas', mare: 'azuis', folha: 'verdes', astro: 'roxas' };
   M.astroDesc = (a) => a.suit === 'all'
-    ? 'Sobe <b class="hl">todos os naipes</b> em 1 nível'
-    : `Sobe <b class="s-${a.suit}">${M.SUITS[a.suit].n}</b> em 1 nível <i>(+12 Fichas, +1 Mult)</i>`;
+    ? 'Fortalece <b class="hl">todas as cores</b> de uma vez: todo par ganha <b class="chips">+12 Fichas</b> e <b class="mult">+1 Mult</b> para sempre.'
+    : `Fortalece as cartas <b class="s-${a.suit}">${M.SUIT_COLOR[a.suit]}</b> (naipe ${M.SUITS[a.suit].n}): todo par dessa cor ganha <b class="chips">+12 Fichas</b> e <b class="mult">+1 Mult</b> para sempre.`;
   M.suitBase = (lvl) => ({ chips: 10 + 12 * (lvl - 1), mult: lvl });
 
   /* ======================= CHEFES ======================= */

@@ -3,7 +3,7 @@
 (function () {
   // w: formas da palavra que viram link (a mais longa primeiro)
   M.GLOSS = {
-    fichas: { w: ['Fichas', 'Ficha'], i: '🔷', t: 'Fichas', d: 'O número <b class="chips">azul</b>. Cada par começa com algumas Fichas (do naipe + das duas cartas). <br><br>Os pontos de um par são sempre: <b class="chips">Fichas</b> × <b class="mult">Mult</b>.', ex: 'Ex.: 20 Fichas × 3 Mult = 60 pontos.' },
+    fichas: { w: ['Fichas', 'Ficha'], i: '🔷', t: 'Fichas = pontos base', d: 'O número <b class="chips">azul</b>: é a <b>base dos pontos</b> de um par. Ele soma o valor da <b>cor</b> (naipe) com o valor das <b>duas cartas</b>. Depois é multiplicado pelo <b class="mult">Mult</b>:<br><br><b class="chips">Fichas</b> × <b class="mult">Mult</b> = <b>pontos do par</b>', ex: 'Ex.: par de Coração vermelho = 10 (cor) + 10 (cartas) = 20 Fichas. Com Combo 3: 20 × 3 = 60 pontos.' },
     mult: { w: ['xMult', 'Mult'], i: '✖️', t: 'Mult (multiplicador)', d: 'O número <b class="mult">vermelho</b>. Ele multiplica as Fichas.<br><br><b class="mult">+4 Mult</b> = soma 4 ao multiplicador.<br><b class="xmult">x2 Mult</b> = dobra o multiplicador (é muito mais forte!).', ex: 'Ex.: 30 Fichas × 5 Mult = 150 pontos.' },
     pontos: { w: ['pontuação mínima', 'Meta'], i: '🎯', t: 'Meta', d: 'Quantos pontos você precisa fazer para vencer o salão. Quando a barra de pontos enche, você vence na hora.' },
     combo: { w: ['Combo'], i: '🔥', t: 'Combo', d: 'Quantos pares seguidos você acertou <b>sem errar</b>. Cada par seguido soma <b class="mult">+1 Mult</b>. Errar zera o Combo.', ex: 'Combo 4 ou mais liga a FEBRE!' },
@@ -23,7 +23,12 @@
     mare: { w: ['Maré'], i: '🌊', t: 'Naipe Maré', d: 'O naipe <b class="s-mare">azul</b>, com o símbolo de gota.' },
     folha: { w: ['Folha'], i: '🌿', t: 'Naipe Folha', d: 'O naipe <b class="s-folha">verde</b>, com o símbolo de folha.' },
     astro: { w: ['Astros', 'Astro'], i: '🪐', t: 'Astro', d: '<b>Duas coisas com o mesmo nome:</b><br>✨ <b class="s-astro">Astro</b> é o naipe <b>roxo</b> (símbolo de estrela).<br>🪐 Um <b>Astro</b> também é um item da loja (Marte, Netuno, Gaia, Saturno) que sobe o <b>nível</b> de um naipe para sempre, dando mais Fichas e Mult aos pares daquele naipe.' },
-    nivel: { w: ['nível', 'níveis'], i: '📈', t: 'Nível do naipe', d: 'Cada naipe tem um nível. Nível maior = mais Fichas e Mult em todo par daquele naipe. Suba com <b>Astros</b>. Veja os níveis no botão "Naipes".' },
+    nivel: { w: ['nível', 'níveis', 'Nível', 'Níveis'], i: '📈', t: 'Nível da cor (naipe)', d: 'Cada cor de carta tem um nível, que começa no 1. Cada nível a mais dá <b class="chips">+12 Fichas</b> e <b class="mult">+1 Mult</b> em <b>todo par</b> daquela cor. Suba com os <b>Astros</b> da loja. Veja os níveis no botão "Naipes".', ex: 'Nível 1: 10 Fichas e 1 Mult · Nível 2: 22 Fichas e 2 Mult · Nível 3: 34 Fichas e 3 Mult.' },
+    marte: { w: ['Marte'], i: '🔴', t: 'Marte', d: 'Astro que fortalece as cartas <b class="s-chama">vermelhas</b> (Chama): todo par vermelho ganha +12 Fichas e +1 Mult para sempre.' },
+    netuno: { w: ['Netuno'], i: '🔵', t: 'Netuno', d: 'Astro que fortalece as cartas <b class="s-mare">azuis</b> (Maré): todo par azul ganha +12 Fichas e +1 Mult para sempre.' },
+    gaia: { w: ['Gaia'], i: '🟢', t: 'Gaia', d: 'Astro que fortalece as cartas <b class="s-folha">verdes</b> (Folha): todo par verde ganha +12 Fichas e +1 Mult para sempre.' },
+    saturno: { w: ['Saturno'], i: '🪐', t: 'Saturno', d: 'Astro que fortalece as cartas <b class="s-astro">roxas</b> (Astro): todo par roxo ganha +12 Fichas e +1 Mult para sempre.' },
+    buraco: { w: ['Buraco Negro'], i: '⚫', t: 'Buraco Negro', d: 'Astro raro que fortalece <b>todas as cores</b> de uma vez (+12 Fichas e +1 Mult em todo par).' },
     figura: { w: ['Figuras', 'Figura'], i: '👑', t: 'Figuras', d: 'As cartas mais fortes: <b>Ampulheta, Gema, Caveira e Coroa</b> (números 6 a 9). Valem mais Fichas. Aparecem nos Pacotes de Cartas.' },
     reliquia: { w: ['Relíquias', 'Relíquia'], i: '🏺', t: 'Relíquia', d: 'Poderes <b>permanentes</b> que você compra na loja e ficam ativos a jornada toda (até 5 de uma vez). Toque numa relíquia para ver o efeito ou vender.' },
     pergaminho: { w: ['Pergaminhos', 'Pergaminho'], i: '📜', t: 'Pergaminho', d: 'Item de <b>uso único</b>. Toque nele e em "Usar". A maioria só funciona durante um salão. Você pode guardar até 2.' },
@@ -98,7 +103,7 @@
   M.kwEl = (el) => { if (el) kwNode(el); };
 
   // onde as palavras ficam clicáveis automaticamente
-  const SEL = '.tip-desc, .tip-lv, .bc-boss, .boss-banner, .deck-desc, .ri-help, .po-desc, .jr-goal, .dt-body, .dt-st-txt, .help-grid p, .st-text, .st-how, .coach-txt, .bubble, .a2-d, .side-pair, .mpair, .bi-d, .ach-d, .bc-tag, .pend, .memory-get, .end-sub, .cf-msg';
+  const SEL = '.tip-desc, .tip-lv, .calc-explain, .deck-explain, .bc-boss, .boss-banner, .deck-desc, .ri-help, .po-desc, .jr-goal, .dt-body, .dt-st-txt, .help-grid p, .st-text, .st-how, .coach-txt, .bubble, .a2-d, .side-pair, .mpair, .bi-d, .ach-d, .bc-tag, .pend, .memory-get, .end-sub, .cf-msg';
   let q = new Set(), sched = false;
   const flush = () => { sched = false; const L = q; q = new Set(); L.forEach(el => { if (el.isConnected) kwNode(el); }); };
   new MutationObserver((muts) => {
