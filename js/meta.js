@@ -151,7 +151,7 @@
 
   /* ================= COMPÊNDIO ================= */
   const TABS = [
-    { k: 'relics', n: 'Relíquias', i: '🏺' }, { k: 'scrolls', n: 'Pergaminhos', i: '📜' }, { k: 'astros', n: 'Astros', i: '🪐' },
+    { k: 'relics', n: 'Relíquias', i: '🏺' }, { k: 'scrolls', n: 'Pergaminhos', i: '📜' }, { k: 'astros', n: 'Planetas', i: '🪐' },
     { k: 'bosses', n: 'Chefes', i: '👹' }, { k: 'decks', n: 'Baralhos', i: '🂠' }, { k: 'backs', n: 'Versos', i: '🎴' },
     { k: 'vouchers', n: 'Runas', i: '🔮' }, { k: 'tags', n: 'Bênçãos', i: '✨' }, { k: 'cards', n: 'Cartas', i: '🃏' },
   ];
@@ -234,7 +234,7 @@
       U.detail({ visual: U.scrollHTML(id, { cls: ' big' }), color: '#b46bff', title: d.n, chips: `<span class="rar" style="--rc:#b46bff">Pergaminho · uso único</span>`, body: d.d + `<div class="dt-note">${d.when === 'round' ? 'Use durante um salão.' : 'Pode usar a qualquer momento.'}</div>`, status: p.seen.scrolls[id] ? statusBox('found', 'Já encontrado.') : statusBox('open', 'Aparece na loja e nos Pacotes Arcanos.') });
     } else if (k === 'astro') {
       const d = M.ASTRO[id];
-      U.detail({ visual: U.astroHTML(id, { cls: ' big' }), color: d.suit === 'all' ? '#888' : M.SUITS[d.suit].c, title: d.n, chips: `<span class="rar" style="--rc:#3cb4ff">Astro · melhora permanente</span>`, body: M.astroDesc(d), status: p.seen.astros[id] ? statusBox('found', 'Já usado.') : statusBox('open', 'Aparece na loja e nos Pacotes Celestes.') });
+      U.detail({ visual: U.astroHTML(id, { cls: ' big' }), color: d.suit === 'all' ? '#888' : M.SUITS[d.suit].c, title: d.n, chips: `<span class="rar" style="--rc:#3cb4ff">Planeta · melhora permanente</span>`, body: M.astroDesc(d), status: p.seen.astros[id] ? statusBox('found', 'Já usado.') : statusBox('open', 'Aparece na loja e nos Pacotes de Planetas.') });
     } else if (k === 'boss') {
       const b = M.BOSS[id], s = p.seen.bosses[id];
       U.detail({ visual: `<div class="boss-chip big" style="--bc:${b.c}">${s ? b.i : '?'}</div>`, color: b.c, title: s ? b.n : 'Chefe desconhecido', chips: `<span class="rar" style="--rc:#f2464f">${b.final ? 'Chefe final · Reino 8' : 'Chefe'}</span>`, body: s ? `<b>Regra:</b> ${b.d}` : '<i>Você ainda não enfrentou este chefe.</i>', status: s ? statusBox('found', 'Já enfrentado.') : statusBox('open', 'Aparece como terceiro salão de algum Reino.') });
@@ -259,7 +259,7 @@
       U.detail({ visual: `<div style="--cw:120px" class="mini-card"><div class="card"><div class="card-inner static">${M.cardFaceHTML({ suit: M.SUIT_KEYS[(id - 1) % 4], rank: +id })}</div></div></div>`, color: '#8e4dff', title: r.n, chips: r.fig ? '<span class="rar" style="--rc:#c77dff">Figura</span>' : '', body: `Cada par de <b>${r.n}</b> vale <b class="chips">+${r.chips * 2} Fichas</b>.${r.fig ? ' Figuras aparecem nos Pacotes de Cartas.' : ''}` });
     } else if (k === 'suit') {
       const s = M.SUITS[id], lv = M.suitBase(1);
-      U.detail({ visual: `<div class="suit-big big" style="--sc:${s.c}">${M.suitIcon(id)}</div>`, color: s.c, title: s.n, chips: '<span class="rar" style="--rc:#2a2350">Naipe</span>', body: `No nível 1, cada par de ${s.n} começa com <b class="chips">${lv.chips} Fichas</b> e <b class="mult">${lv.mult} Mult</b>. Use <b>Astros</b> para subir o nível. <div class="dt-note">Cuidado: o mesmo símbolo em naipes diferentes <b>não</b> forma par!</div>` });
+      U.detail({ visual: `<div class="suit-big big" style="--sc:${s.c}">${M.suitIcon(id)}</div>`, color: s.c, title: s.n, chips: '<span class="rar" style="--rc:#2a2350">Naipe</span>', body: `No nível 1, cada par de ${s.n} começa com <b class="chips">${lv.chips} Fichas</b> e <b class="mult">${lv.mult} Mult</b>. Use <b>Planetas</b> para subir o nível. <div class="dt-note">Cuidado: o mesmo símbolo em naipes diferentes <b>não</b> forma par!</div>` });
     } else if (k === 'enh') {
       U.detail({ visual: `<div style="--cw:120px" class="mini-card"><div class="card"><div class="card-inner static">${M.cardFaceHTML({ suit: 'astro', rank: 5, enh: id })}</div></div></div>`, color: '#3cb4ff', title: M.ENH[id].n, chips: '<span class="rar" style="--rc:#2a2350">Encantamento de carta</span>', body: M.ENH[id].d + '<div class="dt-note">Consiga com Pergaminhos ("o próximo par vira…") ou nos Pacotes de Cartas.</div>' });
     } else if (k === 'ed') {
@@ -358,7 +358,7 @@
       ['💥', 'Melhor par', M.fmt(s.bestPair), 'r'], ['🏛️', 'Melhor salão', M.fmt(s.bestRound), 'g'],
     ];
     const rows = [['🎮', 'Jornadas', s.runs], ['🏆', 'Vitórias', s.wins], ['🃏', 'Pares formados', M.fmt(s.pairs)], ['👹', 'Chefes derrotados', s.bosses],
-      ['📜', 'Pergaminhos usados', s.scrolls], ['🪐', 'Astros usados', s.astros], ['🥃', 'Vidros quebrados', s.glass], ['❌', 'Erros', M.fmt(s.mismatches)],
+      ['📜', 'Pergaminhos usados', s.scrolls], ['🪐', 'Planetas usados', s.astros], ['🥃', 'Vidros quebrados', s.glass], ['❌', 'Erros', M.fmt(s.mismatches)],
       ['💰', 'Mais dinheiro', '$' + s.maxMoney], ['⏱️', 'Tempo de jogo', `${h}h ${mi}min`], ['⭐', 'Nível', p.level], ['📅', 'Melhor diário', p.daily.bestAnte ? 'Reino ' + p.daily.bestAnte : '—']];
     const acc = s.pairs + s.mismatches ? Math.round(s.pairs / (s.pairs + s.mismatches) * 100) : 0;
     $('#screen').innerHTML = `<div class="page2">

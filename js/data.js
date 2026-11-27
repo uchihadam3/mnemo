@@ -3,10 +3,10 @@
 (function () {
 
   M.SUITS = {
-    chama: { n: 'Chama', c: '#ff5a3c', c2: '#ffb03c', dark: '#3a0d08' },
-    mare: { n: 'Maré', c: '#3cb4ff', c2: '#7af0ff', dark: '#071d36' },
-    folha: { n: 'Folha', c: '#43e27a', c2: '#c4ff6a', dark: '#07301a' },
-    astro: { n: 'Astro', c: '#b46bff', c2: '#ff8af0', dark: '#220a3d' },
+    chama: { n: 'Chama', cor: 'vermelhos', c: '#ff5a3c', c2: '#ffb03c', dark: '#3a0d08' },
+    mare: { n: 'Maré', cor: 'azuis', c: '#3cb4ff', c2: '#7af0ff', dark: '#071d36' },
+    folha: { n: 'Folha', cor: 'verdes', c: '#43e27a', c2: '#c4ff6a', dark: '#07301a' },
+    astro: { n: 'Estrela', cor: 'roxos', c: '#b46bff', c2: '#ff8af0', dark: '#220a3d' },
   };
   M.SUIT_KEYS = Object.keys(M.SUITS);
 
@@ -46,7 +46,7 @@
   ];
 
   const suitRelic = (id, n, i, suit) => ({
-    id, n, i, r: 1, c: 5, d: `Pares de <b class="s-${suit}">${M.SUITS[suit].n}</b> dão <b class="mult">+4 Mult</b>`,
+    id, n, i, r: 1, c: 5, d: `Pares <b class="s-${suit}">${M.SUITS[suit].cor}</b> (naipe ${M.SUITS[suit].n}) dão <b class="mult">+4 Mult</b>`,
     match(x) { if (x.pair.suit === suit && x.pair.enh !== 'stone') x.addMult(4); },
   });
 
@@ -112,7 +112,7 @@
       match(x) { const h = x.rs.suitHist.slice(-4); if (h.length === 4 && new Set(h).size === 4) x.xMult(2); } },
     { id: 'joalheiro', n: 'Joalheiro', i: '💍', r: 2, c: 6, d: 'Cartas com <b class="hl">Edição</b> ou <b class="hl">Encantamento</b> dão <b class="money">+$1</b>',
       match(x) { if (x.pair.enh || x.pair.ed) x.money(1); } },
-    { id: 'cadente', n: 'Estrela Cadente', i: '🌠', r: 2, c: 6, d: 'Limpar o tabuleiro cria um <b class="hl">Astro</b>',
+    { id: 'cadente', n: 'Estrela Cadente', i: '🌠', r: 2, c: 6, d: 'Limpar o tabuleiro cria um <b class="hl">Planeta</b>',
       boardClear(x) { x.giveAstro(); } },
     { id: 'polvo', n: 'Polvo Colecionador', i: '🐙', r: 2, c: 7, lock: 1, d: '<b class="mult">+3 Mult</b> por Relíquia que você possui',
       match(x) { x.addMult(3 * x.run.relics.length); } },
@@ -227,7 +227,7 @@
     { id: 'ouro', n: 'Bênção do Ouro', i: '💰', d: 'Ganhe <b class="money">$8</b> agora' },
     { id: 'rara', n: 'Bênção Rara', i: '💎', d: 'A próxima loja terá uma <b class="hl">Relíquia Rara grátis</b>' },
     { id: 'arcana', n: 'Bênção Arcana', i: '📜', d: 'Abra um <b class="hl">Pacote Arcano</b> grátis agora' },
-    { id: 'celeste', n: 'Bênção Celeste', i: '🌌', d: 'Abra um <b class="hl">Pacote Celeste</b> grátis agora' },
+    { id: 'celeste', n: 'Bênção dos Planetas', i: '🌌', d: 'Abra um <b class="hl">Pacote de Planetas</b> grátis agora' },
     { id: 'juros', n: 'Bênção dos Juros', i: '🏦', d: 'Dobra seu dinheiro <i>(máx. +$15)</i>' },
     { id: 'mercador', n: 'Bênção do Mercador', i: '🏷️', d: 'Tudo na próxima loja custa <b class="hl">metade</b>' },
     { id: 'persist', n: 'Bênção da Persistência', i: '🔁', d: '<b class="tent">+3 Vidas</b> no próximo salão' },
@@ -259,7 +259,7 @@
     { id: 'dourado', n: 'Baralho Dourado', c: '#f2c94c', d: 'Começa com <b class="money">$14</b> e uma Runa do Tesouro', cards: std, money: 10, vouchers: ['tesouro'], lock: 'Tenha $40 numa jornada' },
     { id: 'eco', n: 'Baralho Eco', c: '#56ccf2', d: 'Só 10 símbolos, mas <b class="hl">cada um repetido</b>. Mais pares iguais!', cards: () => { const d = []; for (const s of ['chama', 'mare']) for (let r = 1; r <= 5; r++) { d.push({ suit: s, rank: r }); d.push({ suit: s, rank: r }); } return d; }, lock: 'Limpe um tabuleiro sem errar' },
     { id: 'arcano', n: 'Baralho Arcano', c: '#bb6bd9', d: 'Começa com <b class="hl">Bola de Cristal</b> e 2 Pergaminhos', cards: std, relics: ['cristal'], scrolls: 2, lock: 'Use 10 Pergaminhos' },
-    { id: 'celeste', n: 'Baralho Celeste', c: '#00c2a8', d: 'Todos os naipes começam no <b class="hl">nível 2</b>', cards: std, suitLv: 2, lock: 'Use 10 Astros' },
+    { id: 'celeste', n: 'Baralho Celeste', c: '#00c2a8', d: 'Todos os naipes começam no <b class="hl">nível 2</b>', cards: std, suitLv: 2, lock: 'Use 10 Planetas' },
     { id: 'abismo', n: 'Baralho do Abismo', c: '#1b1b3a', d: '<b class="hl">+1 espaço</b> de Relíquia, mas <b class="tent">-1 Vida</b>', cards: std, slots: 1, tent: -1, lock: 'Alcance o Reino 5' },
     { id: 'mono', n: 'Baralho Monocromo', c: '#e0e0e0', d: 'Todas as cartas do <b class="hl">mesmo naipe</b>, símbolos repetidos. Puro cérebro.', cards: (rng) => { const s = rng.pick(M.SUIT_KEYS); const d = []; for (let k = 0; k < 4; k++) for (let r = 1; r <= 5; r++) d.push({ suit: s, rank: r }); return d; }, lock: 'Vença uma jornada' },
     { id: 'caos', n: 'Baralho do Caos', c: '#ff6b35', d: 'Cartas aleatórias e encantadas, e uma Relíquia aleatória', cards: (rng) => { const d = []; for (let i = 0; i < 20; i++) d.push({ suit: rng.pick(M.SUIT_KEYS), rank: rng.int(1, 9), enh: rng.chance(0.3) ? rng.pick(['bonus', 'mult', 'gold', 'glass', 'lucky', 'steel']) : null }); return d; }, randomRelic: 1, lock: 'Jogue 10 jornadas' },
@@ -301,7 +301,7 @@
     { id: 'perfeito', n: 'Memória Perfeita', i: '🧠', d: 'Limpe um tabuleiro sem errar nenhuma vez', unlock: { deck: 'eco' } },
     { id: 'sortegrande', n: 'Sorte Grande', i: '🎰', d: '3 Sortes Cegas em um só salão', unlock: { relic: 'dado' } },
     { id: 'arcanista', n: 'Arcanista', i: '📜', d: 'Use 10 Pergaminhos (no total)', unlock: { deck: 'arcano' } },
-    { id: 'astronomo', n: 'Astrônomo', i: '🔭', d: 'Use 10 Astros (no total)', unlock: { deck: 'celeste' } },
+    { id: 'astronomo', n: 'Astrônomo', i: '🔭', d: 'Use 10 Planetas (no total)', unlock: { deck: 'celeste' } },
     { id: 'colecao', n: 'Colecionador', i: '🏺', d: 'Tenha 5 Relíquias ao mesmo tempo', unlock: { relic: 'polvo' } },
     { id: 'explosao', n: 'Explosão', i: '💥', d: 'Marque 5.000 pontos com um único par', unlock: { relic: 'solnegro' } },
     { id: 'veterano', n: 'Veterano', i: '🎖️', d: 'Jogue 10 jornadas', unlock: { deck: 'caos' } },
@@ -345,7 +345,7 @@
     'Combos longos atraem coisas boas. E chefes ruins.',
     'O Rio Lete apaga tudo. Menos dívidas.',
     'Já experimentou cartas de Vidro? Bonitas, frágeis, como promessas.',
-    'Cada Astro que você consome, um naipe fica mais forte.',
+    'Cada Planeta que você usa deixa uma cor de carta mais forte.',
   ];
 })();
 

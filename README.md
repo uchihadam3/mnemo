@@ -34,12 +34,12 @@ Em *Opções* dá para **exportar/importar o save** (backup ou levar para outro 
 - **Tabuleiro limpo** = +2 Vidas e um novo tabuleiro.
 - 3 salões por Reino: **Pequeno**, **Grande** e **Chefe**. Vença o 8º Reino e devolva as 8 memórias de Mnemósine — ou continue no **modo sem fim**.
 
-Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Astro) **não** forma par!
+Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Estrela) **não** forma par!
 
 ## ✨ Conteúdo
 
 - **52 Relíquias** (comuns, incomuns, raras e lendárias) com edições Laminada, Holográfica, Policromo e Negativa
-- **19 Pergaminhos** de uso único e **5 Astros** que sobem o nível dos naipes
+- **19 Pergaminhos** de uso único e **5 Planetas** que sobem o nível dos naipes
 - **7 Encantamentos** de carta (Dourada, Vidro, Aço, Pedra, Sortuda…)
 - **16 Chefes** com regras malvadas (O Embaralhador, O Mímico, O Relógio, Lete…)
 - **10 Runas** permanentes, **8 Bênçãos** para quem pula salões
