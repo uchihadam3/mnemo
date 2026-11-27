@@ -39,7 +39,7 @@ Cuidado: o mesmo símbolo em **naipes diferentes** (Chama, Maré, Folha, Estrela
 ## ✨ Conteúdo
 
 - **52 Relíquias** (comuns, incomuns, raras e lendárias) com edições Laminada, Holográfica, Policromo e Negativa
-- **19 Pergaminhos** de uso único e **5 Planetas** que sobem o nível dos naipes
+- **19 Pergaminhos** de uso único e **5 Astros** que sobem o nível dos naipes
 - **7 Encantamentos** de carta (Dourada, Vidro, Aço, Pedra, Sortuda…)
 - **16 Chefes** com regras malvadas (O Embaralhador, O Mímico, O Relógio, Lete…)
 - **10 Runas** permanentes, **8 Bênçãos** para quem pula salões

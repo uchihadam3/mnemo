@@ -227,8 +227,8 @@
   G.PACKS = {
     arcano: { n: 'Pacote Arcano', i: '📜', size: 3, pick: 1, c: 4, kind: 'scroll', col: '#b46bff', d: 'Escolha 1 de 3 Pergaminhos' },
     arcano_g: { n: 'Pacote Arcano Grande', i: '📚', size: 5, pick: 2, c: 7, kind: 'scroll', col: '#9b4dff', d: 'Escolha 2 de 5 Pergaminhos' },
-    celeste: { n: 'Pacote de Planetas', i: '🌌', size: 3, pick: 1, c: 4, kind: 'astro', col: '#3cb4ff', d: 'Escolha 1 de 3 Planetas' },
-    celeste_g: { n: 'Pacote de Planetas Grande', i: '🔭', size: 5, pick: 2, c: 7, kind: 'astro', col: '#2a8fff', d: 'Escolha 2 de 5 Planetas' },
+    celeste: { n: 'Pacote de Astros', i: '🌌', size: 3, pick: 1, c: 4, kind: 'astro', col: '#3cb4ff', d: 'Escolha 1 de 3 Astros' },
+    celeste_g: { n: 'Pacote de Astros Grande', i: '🔭', size: 5, pick: 2, c: 7, kind: 'astro', col: '#2a8fff', d: 'Escolha 2 de 5 Astros' },
     cartas: { n: 'Pacote de Cartas', i: '🃏', size: 3, pick: 1, c: 4, kind: 'card', col: '#43e27a', d: 'Escolha 1 de 3 cartas para o baralho' },
     cartas_g: { n: 'Pacote de Cartas Grande', i: '🎴', size: 5, pick: 2, c: 6, kind: 'card', col: '#2fc566', d: 'Escolha 2 de 5 cartas para o baralho' },
     reliq: { n: 'Pacote de Relíquias', i: '🏺', size: 2, pick: 1, c: 7, kind: 'relic', col: '#ff4d6d', d: 'Escolha 1 de 2 Relíquias' },

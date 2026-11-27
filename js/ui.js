@@ -35,7 +35,7 @@
     const d = M.ASTRO[id];
     let lv = '';
     if (M.run && d.suit !== 'all') { const l = M.run.suitLv[d.suit]; lv = `<div class="tip-lv">Nível ${l} → <b>${l + 1}</b></div>`; }
-    return `<div class="tip-title">${d.i} ${d.n}</div><div class="tip-desc">${M.astroDesc(d)}</div>${lv}<div class="tip-tags"><span class="rar" style="--rc:#3cb4ff">Planeta</span></div>`;
+    return `<div class="tip-title">${d.i} ${d.n}</div><div class="tip-desc">${M.astroDesc(d)}</div>${lv}<div class="tip-tags"><span class="rar" style="--rc:#3cb4ff">Astro</span></div>`;
   };
   U.cardHTML = (c, cls = '') => `<div class="mini-card${cls}"><div class="card"><div class="card-inner static">${M.cardFaceHTML(c)}</div></div></div>`;
   U.cardTip = (c) => {
@@ -644,7 +644,7 @@
         <div class="deck-cards">${list.map(c => `<div class="dc-cell" data-tip="deckc:${c.uid}">${U.cardHTML(c)}<span class="dc-val">${c.enh === 'stone' ? 60 : b.chips + M.RANKS[c.rank - 1].chips * 2}</span></div>`).join('') || '<i class="muted">vazio</i>'}</div></div>`;
     }).join('');
     U.overlay(`<div class="deck-view"><div class="panel-title">Seu baralho <small>${run.cards.length} cartas</small></div>
-      <div class="deck-explain">💡 O número embaixo de cada carta é quantas <b class="chips">Fichas</b> o par dela vale. Os pontos do par são <b class="chips">Fichas</b> × <b class="mult">Mult</b>. Cartas com número maior e cores com <b>nível</b> alto (suba com Planetas) valem mais. Toque numa carta para ver a conta.</div>
+      <div class="deck-explain">💡 O número embaixo de cada carta é quantas <b class="chips">Fichas</b> o par dela vale. Os pontos do par são <b class="chips">Fichas</b> × <b class="mult">Mult</b>. Cartas com número maior e cores com <b>nível</b> alto (suba com Astros) valem mais. Toque numa carta para ver a conta.</div>
       ${html}</div>`);
   };
   U.showRunInfo = () => {
@@ -653,7 +653,7 @@
     const vs = run.vouchers.map(v => `<span class="vchip" data-tip="col-voucher:${v}">${M.VOUCHER[v].i} ${M.VOUCHER[v].n}</span>`).join('') || '<i class="muted">Nenhuma ainda</i>';
     const res = G.calcRes();
     U.overlay(`<div class="run-info"><div class="panel-title">Níveis dos naipes</div><div class="lv-list">${rows}</div>
-      <div class="ri-help">Cada par pontua: <b class="chips">Fichas do naipe + Fichas das 2 cartas</b> × <b class="mult">Mult do naipe + Combo</b>. Planetas sobem o nível dos naipes.</div>
+      <div class="ri-help">Cada par pontua: <b class="chips">Fichas do naipe + Fichas das 2 cartas</b> × <b class="mult">Mult do naipe + Combo</b>. Astros sobem o nível dos naipes.</div>
       <div class="panel-title small">Runas gravadas</div><div class="vchips">${vs}</div>
       <div class="panel-title small">Por salão</div><div class="ri-res"><span class="tent">${res.tent} Vidas</span><span class="visl">${res.visl} Vislumbres</span><span class="hl">${M.fmtX(res.prev)}s de pré-visualização</span></div>
       <div class="ri-seed">${M.DECK[run.deck].n} · ${M.STAKES[run.stake - 1].n}${run.daily ? ' · Desafio Diário' : ''}</div></div>`);
@@ -685,7 +685,7 @@
       <div><b class="hl">👁 Vislumbres</b><p>Espiam uma carta sem gastar Vida. Botão direito numa carta, ou clique no contador.</p></div>
       <div><b class="hl">🧹 Tabuleiro limpo</b><p>Limpar todas as cartas dá <b class="tent">+2 Vidas</b> e um novo tabuleiro aparece.</p></div>
       <div><b class="hl">🏺 Relíquias</b><p>Compre na loja. Dão efeitos passivos poderosos. Combine-as para builds absurdas!</p></div>
-      <div><b class="hl">📜 Pergaminhos & 🪐 Planetas</b><p>Pergaminhos são de uso único. Planetas sobem o nível de um naipe para sempre.</p></div>
+      <div><b class="hl">📜 Pergaminhos & 🪐 Astros</b><p>Pergaminhos são de uso único. Astros sobem o nível de um naipe para sempre.</p></div>
       <div><b class="hl">💰 Dinheiro</b><p>Ganhe por vitória, por Vidas restantes e juros ($1 a cada $5 guardados).</p></div>
       <div><b class="hl">⌨ Atalhos</b><p><b>Espaço</b>: Vislumbre · <b>1-5</b>: usar pergaminho · <b>Esc</b>: menu</p></div>
       </div></div>`);
@@ -917,7 +917,7 @@
     U._colTab = tab;
     M.bg.set('menu');
     const P = M.profile;
-    const tabs = { relics: 'Relíquias', scrolls: 'Pergaminhos', astros: 'Planetas', bosses: 'Chefes', decks: 'Baralhos', tags: 'Bênçãos', vouchers: 'Runas', cards: 'Cartas' };
+    const tabs = { relics: 'Relíquias', scrolls: 'Pergaminhos', astros: 'Astros', bosses: 'Chefes', decks: 'Baralhos', tags: 'Bênçãos', vouchers: 'Runas', cards: 'Cartas' };
     let body = '';
     if (tab === 'relics') body = [1, 2, 3, 4].map(r => `<div class="col-sec"><div class="col-h" style="color:${M.RARITY[r].c}">${M.RARITY[r].n}</div><div class="col-grid">${M.RELICS.filter(x => x.r === r).map(d => {
       const unl = M.save.isRelicUnlocked(d.id), seen = P.seen.relics[d.id];
@@ -964,7 +964,7 @@
     M.bg.set('menu');
     const s = M.profile.stats, P = M.profile;
     const h = Math.floor(s.playTime / 3600), m = Math.floor((s.playTime % 3600) / 60);
-    const rows = [['Jornadas', s.runs], ['Vitórias', s.wins], ['Melhor Reino', s.bestAnte], ['Maior combo', 'x' + s.bestCombo], ['Pares formados', M.fmt(s.pairs)], ['Melhor par', M.fmt(s.bestPair)], ['Melhor salão', M.fmt(s.bestRound)], ['Chefes derrotados', s.bosses], ['Pergaminhos usados', s.scrolls], ['Planetas usados', s.astros], ['Vidros quebrados', s.glass], ['Erros', M.fmt(s.mismatches)], ['Mais dinheiro', '$' + s.maxMoney], ['Tempo de jogo', `${h}h ${m}min`], ['Nível de perfil', P.level]];
+    const rows = [['Jornadas', s.runs], ['Vitórias', s.wins], ['Melhor Reino', s.bestAnte], ['Maior combo', 'x' + s.bestCombo], ['Pares formados', M.fmt(s.pairs)], ['Melhor par', M.fmt(s.bestPair)], ['Melhor salão', M.fmt(s.bestRound)], ['Chefes derrotados', s.bosses], ['Pergaminhos usados', s.scrolls], ['Astros usados', s.astros], ['Vidros quebrados', s.glass], ['Erros', M.fmt(s.mismatches)], ['Mais dinheiro', '$' + s.maxMoney], ['Tempo de jogo', `${h}h ${m}min`], ['Nível de perfil', P.level]];
     $('#screen').innerHTML = `<div class="page"><div class="page-head"><button class="btn" id="pg-back">◀ Voltar</button><div class="panel-title big">Estatísticas</div><div></div></div>
       <div class="page-body"><div class="stats-grid">${rows.map(([k, v]) => `<div class="stat"><label>${k}</label><b>${v}</b></div>`).join('')}</div></div></div>`;
     $('#pg-back').onclick = () => U.show('menu');

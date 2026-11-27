@@ -1,5 +1,5 @@
 /* MNEMO — service worker: o jogo funciona offline */
-const CACHE = 'mnemo-v1.5.2';
+const CACHE = 'mnemo-v1.5.3';
 const FILES = ['./', './index.html', './css/style.css', './manifest.webmanifest',
   './fonts/lilita.woff2', './fonts/nunito.woff2', './assets/icon-192.png', './assets/icon-512.png',
   ...['util', 'data', 'glyphs', 'emoji', 'audio', 'bg', 'fx', 'save', 'game', 'board', 'ui', 'meta', 'glossary', 'main'].map(f => `./js/${f}.js`),
