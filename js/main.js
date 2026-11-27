@@ -1,7 +1,7 @@
 /* MNEMO — inicialização e entrada */
 'use strict';
 (function () {
-  M.VERSION = '1.4.0';
+  M.VERSION = '1.5.0';
   const $ = M.$;
 
   M.applySettings = () => {
@@ -59,9 +59,9 @@
       }
       if (!t.closest('#pop')) M.ui.closePop();
       const tipEl = t.closest('[data-tip]');
-      if (tipEl && tipEl.tagName !== 'BUTTON' && M._lastPointer === 'touch' && !t.closest('button')) {
+      if (tipEl && tipEl.tagName !== 'BUTTON' && !t.closest('button')) {
         const html = M.ui.tipFor(tipEl);
-        if (html) { M.ui.showTip(tipEl, html); clearTimeout(M._tipT); M._tipT = setTimeout(M.ui.hideTip, 3500); return; }
+        if (html) { M.ui.openPop(tipEl, html + '<div class="pop-hint">Toque nas palavras sublinhadas para entender</div>', []); return; }
       }
       const pk = t.closest('[data-h="peekbtn"]');
       if (pk) {
@@ -94,7 +94,7 @@
       tipEl = el;
       if (!el || $('#pop')) { M.ui.hideTip(); return; }
       const html = M.ui.tipFor(el);
-      if (html) { M.ui.showTip(el, html); M.audio.play('hover'); } else M.ui.hideTip();
+      if (html) { M.ui.showTip(el, html + (el.tagName !== 'BUTTON' && !el.closest('button') ? '<div class="tip-click">🖱 Clique para ver detalhes e entender as palavras</div>' : '')); M.audio.play('hover'); } else M.ui.hideTip();
     });
 
     // efeito de inclinação 3D das cartas

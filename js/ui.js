@@ -276,7 +276,7 @@
     U.closePop(); U.hideTip();
     el.classList.add('selected');
     const p = document.createElement('div'); p.id = 'pop'; p.className = 'popover';
-    p.innerHTML = html + `<div class="pop-actions">${actions.map((a, i) => `<button class="btn ${a.cls || ''}" data-pa="${i}" ${a.disabled ? 'disabled' : ''}>${a.t}</button>`).join('')}</div>`;
+    p.innerHTML = html + (actions.length ? '' : '') + `<div class="pop-actions">${actions.map((a, i) => `<button class="btn ${a.cls || ''}" data-pa="${i}" ${a.disabled ? 'disabled' : ''}>${a.t}</button>`).join('')}</div>`;
     document.body.appendChild(p);
     const r = el.getBoundingClientRect();
     let x = r.left + r.width / 2 - p.offsetWidth / 2, y = r.bottom + 10;

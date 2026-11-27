@@ -1106,3 +1106,29 @@ img.emo { width: 1.2em; height: 1.2em; object-fit: contain; vertical-align: -0.2
   .bc-skip { padding-top: 6px; }
 }
 @media (max-width: 760px) { #stage[data-screen="select"] .topbar { display: none; } }
+
+/* ================= GLOSSÁRIO (v1.5) ================= */
+.kw { color: inherit; text-decoration: underline dotted 2px; text-decoration-color: #ffd166; text-underline-offset: 3px; cursor: help; border-radius: 4px; padding: 0 1px; transition: background .15s; pointer-events: auto; }
+.kw:hover { background: rgba(255, 209, 102, .18); }
+.tip .kw { pointer-events: none; }
+.pi-kind .kw, .xmult .kw { text-decoration-color: rgba(255, 255, 255, .8); }
+.gloss { position: fixed; z-index: 95; width: min(320px, 88vw); background: #fffaf0; color: #2a1f50; border-radius: 18px; padding: 12px 14px 10px; box-shadow: 0 18px 50px rgba(0, 0, 0, .6), 0 0 0 4px rgba(255, 209, 102, .8); animation: glIn .22s cubic-bezier(.2, 1.5, .4, 1); font-weight: 700; }
+.gloss.out { animation: glOut .16s forwards; }
+@keyframes glIn { from { transform: scale(.8) translateY(10px); opacity: 0; } }
+@keyframes glOut { to { transform: scale(.9); opacity: 0; } }
+.gl-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.gl-ico { font-size: 26px; line-height: 1; }
+.gl-head b { flex: 1; font-family: var(--disp); font-weight: 400; font-size: 21px; color: #5a1fc0; }
+.gl-x { width: 30px; height: 30px; border-radius: 50%; background: #eee5ff; color: #5a1fc0; font-size: 14px; }
+.gl-body { font-size: 14.5px; line-height: 1.45; }
+.gl-body .chips { color: #1a72c9; } .gl-body .mult { color: #d62839; } .gl-body .money { color: #a87200; }
+.gl-body .s-chama { color: #d84315; } .gl-body .s-mare { color: #1565c0; } .gl-body .s-folha { color: #2e7d32; } .gl-body .s-astro { color: #7b1fa2; }
+.gl-body .kw { text-decoration-color: #8e4dff; }
+.gl-body .kw:hover { background: #eee5ff; }
+.gl-ex { margin-top: 8px; background: #f3ecff; border-radius: 10px; padding: 6px 9px; font-size: 13px; color: #4a3a80; }
+.gl-hint { margin-top: 8px; font-size: 11px; color: #8a7fb0; text-align: center; }
+.gl-back { margin-top: 8px; font-family: var(--disp); font-size: 14px; color: #5a1fc0; background: #eee5ff; border-radius: 10px; padding: 4px 10px; }
+.tip-click { margin-top: 8px; font-size: 11px; color: #ffd166; }
+.pop-hint { margin-top: 8px; font-size: 11px; color: var(--muted); }
+.pop-actions:empty { display: none; }
+.popover { background: #150f30; backdrop-filter: blur(6px); }
